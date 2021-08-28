@@ -1,0 +1,20 @@
+CREATE EXTENSION IF NOT EXISTS CUBE;
+
+CREATE TABLE IF NOT EXISTS identity (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    first_name VARCHAR NOT NULL,
+    last_name VARCHAR NOT NULL,
+    avatar VARCHAR,
+    UNIQUE (first_name, last_name)
+);
+
+CREATE TABLE IF NOT EXISTS face_encoding (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    identity_id UUID NOT NULL REFERENCES identity,
+    vec_low DOUBLE PRECISION ARRAY NOT NULL,
+    vec_high DOUBLE PRECISION ARRAY NOT NULL
+);

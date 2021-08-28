@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  postgresql:
+    image: postgres:12
+    volumes:
+      - ${PWD}/server/postgresql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    command: ["postgres", "-c", "log_statement=all"]
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB:       faces
+      POSTGRES_USER:     faces
+      POSTGRES_PASSWORD: faces
+
+  server:
+    image: face-recognition
+    build:
+      context: server
+      args:
+        PIP_ENV: development
+    depends_on:
+      - postgresql
+    environment:
+      # Development
+      APP_ENV: 'development'
+      APP_DEBUG: 'true'
+
+      # PostgreSQL
+      DB_HOST: postgresql
+      DB_USER: faces
+      DB_PASS: faces
+      DB_NAME: faces
+    volumes:
+      - ${PWD}/server:/usr/src
+      - ${PWD}/server/data:/data
+
+  nginx:
+    image: nginx
+    depends_on:
+      - server
+    volumes:
+      - ${PWD}/server/data:/data
+      - ${PWD}/server/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 8080:80
