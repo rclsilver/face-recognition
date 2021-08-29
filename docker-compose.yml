@@ -25,6 +25,7 @@ services:
       # Development
       APP_ENV: 'development'
       APP_DEBUG: 'true'
+      APP_PREFIX: '/api'
 
       # PostgreSQL
       DB_HOST: postgresql
@@ -35,12 +36,26 @@ services:
       - ${PWD}/server:/usr/src
       - ${PWD}/server/data:/data
 
+  frontend:
+    image: face-recognition-frontend
+    build:
+      context: frontend
+      target: devel-stage
+    volumes:
+    - ./frontend:/app
+    environment:
+      NPM_CONFIG_PREFIX: /tmp
+    command: sh -c 'npm install && npm install --only=dev && npm start'
+    ports:
+    - 4200
+
   nginx:
     image: nginx
     depends_on:
       - server
+      - frontend
     volumes:
       - ${PWD}/server/data:/data
-      - ${PWD}/server/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ${PWD}/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     ports:
       - 8080:80

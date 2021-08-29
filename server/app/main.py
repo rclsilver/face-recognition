@@ -11,6 +11,7 @@ app = FastAPI(
     title='Faces recognition',
     version=VERSION,
     debug=debug_mode,
+    root_path=os.getenv('APP_PREFIX', ''),
 )
 
 # Create the routes
