@@ -1,7 +1,7 @@
 from app.controllers.identities import IdentityController
 from app.controllers.recognition import RecognitionController
 from app.database import get_session
-from app.schemas import FaceEncoding, Identity, IdentityCreate
+from app.schemas import FaceEncoding, Identity, IdentityCreate, IdentityUpdate
 from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy.orm import Session
 from typing import List
@@ -41,6 +41,29 @@ async def get_identity(
     Get identity
     """
     return IdentityController.get_identity(db, identity_id)
+
+
+@router.put('/{identity_id}', response_model=Identity)
+async def update_identity(
+    identity_id: UUID,
+    payload: IdentityUpdate,
+    db: Session = Depends(get_session)
+) -> Identity:
+    """
+    Update identity
+    """
+    return IdentityController.update_identity(db, identity_id, payload)
+
+
+@router.delete('/{identity_id}')
+async def delete_identity(
+    identity_id: UUID,
+    db: Session = Depends(get_session)
+) -> Identity:
+    """
+    Delete identity
+    """
+    return IdentityController.delete_identity(db, identity_id)
 
 
 @router.post('/{identity_id}/learn', response_model=FaceEncoding)

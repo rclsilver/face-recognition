@@ -58,10 +58,7 @@ class FaceEncoding(Base):
     __tablename__ = 'face_encoding'
 
     identity_id = Column(UUID(as_uuid=True), ForeignKey('identity.id'), nullable=False)
-    identity = relationship(Identity, backref=backref('face_encodings', uselist=True))
-
-    #file = Column(String, nullable=False)
-    #rect = Column(BOX, nullable=False)
+    identity = relationship(Identity, backref=backref('face_encodings', uselist=True, cascade='all, delete-orphan'))
 
     vec_low = Column(ARRAY(Float), nullable=False)
     vec_high = Column(ARRAY(Float), nullable=False)

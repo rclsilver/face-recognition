@@ -19,6 +19,13 @@ class IdentityCreate(BaseModel):
     last_name: str
 
 
+class IdentityUpdate(IdentityCreate):
+    """
+    Identity update payload
+    """
+    pass
+
+
 class Identity(Base):
     """
     Identity row

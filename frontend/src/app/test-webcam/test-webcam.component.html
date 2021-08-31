@@ -1,0 +1,9 @@
+<div class="container">
+  <webcam [trigger]="trigger$" (imageCapture)="identify($event)" [imageType]="imageType" [imageQuality]="imageQuality"></webcam>
+  <button (click)="capture()">Capture</button>
+  <div *ngIf="result$ | async as result">
+    <ul>
+      <li *ngFor="let person of result">{{ person.name }} - {{ person.score }}%</li>
+    </ul>
+  </div>
+</div>

@@ -1,0 +1,6 @@
+<div class="result" [ngStyle]="{ 'display': (show$ | async) ? 'block' : 'none' }">
+  <div class="wrapper">
+    <img #image [width]="width" [height]="height">
+    <div #canvas class="canvas"></div>
+  </div>
+</div>

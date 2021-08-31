@@ -1,0 +1,10 @@
+<div class="content">
+  <app-webcam
+    *ngIf="!(result$ | async)"
+    (snapshot)="onCapture($event)"
+  ></app-webcam>
+  <button *ngIf="!(result$ | async)" (click)="query()">Query</button>
+  <p *ngIf="notFound$ | async">Not found!</p>
+  <app-result [result]="result$"></app-result>
+  <button *ngIf="result$ | async" (click)="reset()">Reset</button>
+</div>

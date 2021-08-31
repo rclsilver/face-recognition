@@ -1,0 +1,14 @@
+<div class="content">
+  <select (change)="select($event)">
+    <option disabled="disabled" selected>- Select identity -</option>
+    <option *ngFor="let identity of identities$ | async" [value]="identity.id">
+      {{ identity.first_name }} {{ identity.last_name }}
+    </option>
+  </select>
+
+  <app-webcam
+    *ngIf="identity$ | async"
+    (snapshot)="onCapture($event)"
+  ></app-webcam>
+  <button *ngIf="identity$ | async" (click)="learn()">Learn</button>
+</div>

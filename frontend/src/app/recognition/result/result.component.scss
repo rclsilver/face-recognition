@@ -1,0 +1,15 @@
+.result {
+  width: 640px;
+  height: 480px;
+
+  .wrapper {
+    position: relative;
+
+    img,
+    .canvas {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+    }
+  }
+}
