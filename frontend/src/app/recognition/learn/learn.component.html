@@ -10,5 +10,7 @@
     *ngIf="identity$ | async"
     (snapshot)="onCapture($event)"
   ></app-webcam>
+  <p *ngIf="error$ | async as error" class="text-danger">{{ error }}</p>
+  <p *ngIf="message$ | async as message" class="text-success">{{ message }}</p>
   <button *ngIf="identity$ | async" (click)="learn()">Learn</button>
 </div>

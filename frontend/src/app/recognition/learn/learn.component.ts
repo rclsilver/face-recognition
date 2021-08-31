@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Identity } from 'src/app/models/identity.model';
@@ -12,9 +13,13 @@ import { WebcamComponent } from '../webcam/webcam.component';
 export class LearnComponent implements OnInit {
   private _identity$ = new BehaviorSubject<Identity | undefined>(undefined);
   private _identitities$ = new BehaviorSubject<Identity[]>([]);
+  private _error$ = new BehaviorSubject<string>('');
+  private _message$ = new BehaviorSubject<string>('');
 
   readonly identity$ = this._identity$.asObservable();
   readonly identities$ = this._identitities$.asObservable();
+  readonly error$ = this._error$.asObservable();
+  readonly message$ = this._message$.asObservable();
 
   @ViewChild(WebcamComponent) webcam?: WebcamComponent;
 
@@ -50,8 +55,15 @@ export class LearnComponent implements OnInit {
   }
 
   onCapture(image: Blob): void {
-    this._api.learn(this._identity$.value!, image).subscribe((result) => {
-      console.log(result);
-    });
+    this._api.learn(this._identity$.value!, image).subscribe(
+      (result) => {
+        this._error$.next('');
+        this._message$.next(`OK: ${result.id}`);
+        setTimeout(() => this._message$.next(''), 3000);
+      },
+      (result: HttpErrorResponse) => {
+        this._error$.next(result.error.detail);
+      }
+    );
   }
 }

@@ -2,7 +2,7 @@ from app.controllers.identities import IdentityController
 from app.controllers.recognition import RecognitionController
 from app.database import get_session
 from app.schemas import FaceEncoding, Identity, IdentityCreate, IdentityUpdate
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
@@ -80,9 +80,8 @@ async def learn(
     faces = RecognitionController.get_faces_locations(image)
 
     if not faces:
-        raise Exception('No face found')
+        raise HTTPException(status_code=400, detail='No face found')
     elif len(faces) > 1:
-        raise Exception('More than one face found')
-        # todo, on retourne une erreur avec les locations trouvées
+        raise HTTPException(status_code=400, detail='More than one face found')
 
     return RecognitionController.create_face_encoding(db, identity, image, faces[0])
