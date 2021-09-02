@@ -3,7 +3,6 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { TestWebcamComponent } from './test-webcam/test-webcam.component';
 
 import { WebcamModule } from 'ngx-webcam';
 import { HttpClientModule } from '@angular/common/http';
@@ -15,11 +14,13 @@ import { WebcamComponent } from './recognition/webcam/webcam.component';
 import { ResultComponent } from './recognition/result/result.component';
 import { IdentityFormComponent } from './identities/identity-form/identity-form.component';
 import { FormsModule } from '@angular/forms';
+import { CameraListComponent } from './cameras/camera-list/camera-list.component';
+import { CameraFormComponent } from './cameras/camera-form/camera-form.component';
+import { CameraLiveComponent } from './cameras/camera-live/camera-live.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    TestWebcamComponent,
     TopMenuComponent,
     IdentityListComponent,
     LearnComponent,
@@ -27,6 +28,9 @@ import { FormsModule } from '@angular/forms';
     WebcamComponent,
     ResultComponent,
     IdentityFormComponent,
+    CameraListComponent,
+    CameraFormComponent,
+    CameraLiveComponent,
   ],
   imports: [
     BrowserModule,

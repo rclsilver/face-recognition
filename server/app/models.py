@@ -62,3 +62,10 @@ class FaceEncoding(Base):
 
     vec_low = Column(ARRAY(Float), nullable=False)
     vec_high = Column(ARRAY(Float), nullable=False)
+
+
+class Camera(Base):
+    __tablename__ = 'camera'
+
+    label = Column(String, nullable=False)
+    url = Column(String, nullable=False, unique=True)

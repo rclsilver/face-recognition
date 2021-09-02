@@ -1,0 +1,19 @@
+.table-header {
+  text-align: right;
+
+  button {
+    margin-left: 0.1em;
+    margin-right: 0.1em;
+  }
+}
+
+table button {
+  margin-left: 0.1em;
+  margin-right: 0.1em;
+}
+
+.live {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

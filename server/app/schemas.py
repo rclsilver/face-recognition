@@ -38,12 +38,41 @@ class Identity(Base):
         orm_mode = True
 
 
+class CameraCreate(BaseModel):
+    """
+    Camera creation payload
+    """
+    label: str
+    url: str
+
+
+class CameraUpdate(CameraCreate):
+    """
+    Camera update payload
+    """
+    pass
+
+
+class Camera(Base):
+    """
+    Camera row
+    """
+    label: str
+    url: str
+
+    class Config:
+        orm_mode = True
+
+
 class Point(BaseModel):
     """
     A point
     """
     x: int
     y: int
+
+    class Config:
+        orm_mode = True
 
 
 class Rect(BaseModel):
@@ -52,6 +81,9 @@ class Rect(BaseModel):
     """
     start: Point
     end: Point
+
+    class Config:
+        orm_mode = True
 
 
 class FaceEncoding(Base):
@@ -71,3 +103,6 @@ class Recognition(BaseModel):
     identity: Identity
     score: float
     rect: Rect
+
+    class Config:
+        orm_mode = True

@@ -1,0 +1,10 @@
+<div [ngStyle]="{ display: (show$ | async) ? 'block' : 'none' }">
+  <div class="output">
+    <div class="header">
+      <button type="button" class="btn btn-sm" (click)="stop()">
+        <i class="fas fa-window-close"></i>
+      </button>
+    </div>
+    <img #output>
+  </div>
+</div>

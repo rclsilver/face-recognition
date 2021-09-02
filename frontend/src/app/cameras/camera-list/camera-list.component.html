@@ -1,0 +1,58 @@
+<div class="container-fluid">
+  <div class="table-header">
+    <button type="button" class="btn btn-secondary" (click)="refresh()">
+      <i class="fas fa-refresh"></i>
+      Refresh
+    </button>
+    <button type="button" class="btn btn-primary" (click)="edit()">
+      <i class="fas fa-plus"></i>
+      New camera
+    </button>
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Label</th>
+        <th scope="col">URL</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let camera of cameras$ | async">
+        <th scope="row">{{ camera.id }}</th>
+        <td>{{ camera.label }}</td>
+        <td>{{ camera.url }}</td>
+        <td>
+          <button
+            type="button"
+            class="btn btn-sm btn-primary"
+            (click)="edit(camera)"
+          >
+            <i class="fas fa-edit"></i>
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm btn-danger"
+            (click)="delete(camera)"
+          >
+            <i class="fas fa-trash"></i>
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm btn-secondary"
+            (click)="startLive(camera)"
+          >
+            <i class="fas fa-play"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <app-camera-form
+    #form
+    (submit)="refresh()"
+    [ngStyle]="{ display: (form$ | async) ? 'block' : 'none' }"
+  ></app-camera-form>
+  <app-camera-live #live class="live"></app-camera-live>
+</div>

@@ -12,6 +12,10 @@ export class TopMenuComponent {
       path: 'identities',
     },
     {
+      label: 'Cameras',
+      path: 'cameras',
+    },
+    {
       label: 'Query',
       path: 'recognition/query',
     },

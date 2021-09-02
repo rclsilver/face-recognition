@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { Camera } from '../models/camera.model';
 import { FaceEncoding } from '../models/face-encoding.model';
 import { Identity } from '../models/identity.model';
 import { Recognition } from '../models/recognition.model';
@@ -30,6 +31,28 @@ export class ApiService {
 
   deleteIdentity(identity: Pick<Identity, 'id'>): Observable<void> {
     return this._http.delete<void>(`/api/identities/${identity.id}`);
+  }
+
+  getCameras(): Observable<Camera[]> {
+    return this._http.get<Camera[]>('/api/streaming/cameras/');
+  }
+
+  createCamera(payload: Pick<Camera, 'label' | 'url'>): Observable<Camera> {
+    return this._http.post<Camera>('/api/streaming/cameras/', payload);
+  }
+
+  updateCamera(
+    camera: Pick<Camera, 'id'>,
+    payload: Pick<Camera, 'label' | 'url'>
+  ): Observable<Camera> {
+    return this._http.put<Camera>(
+      `/api/streaming/cameras/${camera.id}`,
+      payload
+    );
+  }
+
+  deleteCamera(camera: Pick<Camera, 'id'>): Observable<void> {
+    return this._http.delete<void>(`/api/streaming/cameras/${camera.id}`);
   }
 
   query(image: Blob): Observable<Recognition[] | null> {

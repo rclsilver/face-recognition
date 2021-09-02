@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { ExtraOptions, RouterModule, Routes } from '@angular/router';
+import { CameraListComponent } from './cameras/camera-list/camera-list.component';
 import { IdentityListComponent } from './identities/identity-list/identity-list.component';
 import { LearnComponent } from './recognition/learn/learn.component';
 import { QueryComponent } from './recognition/query/query.component';
@@ -24,6 +25,15 @@ const routes: Routes = [
       {
         path: 'query',
         component: QueryComponent,
+      },
+    ],
+  },
+  {
+    path: 'cameras',
+    children: [
+      {
+        path: '',
+        component: CameraListComponent,
       },
     ],
   },

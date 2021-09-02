@@ -1,0 +1,28 @@
+<form #form="ngForm" (ngSubmit)="submitForm()">
+  <div class="form-group">
+    <label for="label">Label</label>
+    <input
+      type="text"
+      class="form-control"
+      id="label"
+      placeholder="Label"
+      name="label"
+      [(ngModel)]="record.label"
+    />
+  </div>
+  <div class="form-group">
+    <label for="url">URL</label>
+    <input
+      type="text"
+      class="form-control"
+      id="url"
+      placeholder="URL"
+      name="url"
+      [(ngModel)]="record.url"
+    />
+  </div>
+  <div class="buttons">
+    <button type="reset" class="btn btn-secondary">Reset</button>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </div>
+</form>
