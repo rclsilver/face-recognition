@@ -4,6 +4,7 @@ import logging
 import time
 
 from app.controllers.recognition import RecognitionController
+from datetime import datetime
 from sqlalchemy.orm import Session
 
 
@@ -18,7 +19,9 @@ class VideoStream:
         face_recognition: bool = True,
         recognition_interval: int = 1000,
         fps: int = 25,
-        show_fps: bool= True,
+        show_fps: bool = True,
+        show_date: bool = True,
+        show_label: bool = True,
         label: str = None,
         force_width: int = None
     ):
@@ -37,6 +40,13 @@ class VideoStream:
         self._tick = 0
         self._label = label
         self._force_width = force_width
+        self._show_date = show_date
+        self._show_label = show_label
+        self._text_margin = 5
+        self._text_color = (255, 255, 255)
+        self._font = cv2.FONT_HERSHEY_DUPLEX
+        self._font_scale = 0.7
+        self._font_thickness = 1
 
     def refresh_rectangles(self, frame) -> None:
         if frame.shape[1] > self.max_width:
@@ -80,7 +90,7 @@ class VideoStream:
             frame = cv2.rectangle(frame, rectangle[0], rectangle[1], (255, 0, 0), 2)
 
             if rectangle[2]:
-                frame = cv2.putText(frame, rectangle[2], (rectangle[0][0], rectangle[1][1] + 24), cv2.FONT_HERSHEY_DUPLEX, 1, (255, 0, 0))
+                frame = cv2.putText(frame, rectangle[2], (rectangle[0][0], rectangle[1][1] + 24), self._font, 1, (255, 0, 0))
 
         return frame
 
@@ -100,9 +110,25 @@ class VideoStream:
             self._fps_time = self._tick
 
         if self._fps_value is not None:
-            frame = cv2.putText(frame, f'FPS: {self._fps_value}', (5, 30), cv2.FONT_HERSHEY_DUPLEX, 1, (255, 255, 2555))
+            text = f'FPS: {self._fps_value}'
+            size = cv2.getTextSize(text, self._font, self._font_scale, self._font_thickness)
+            x = self._text_margin
+            y = size[0][1] + self._text_margin
+            frame = cv2.putText(frame, text, (x, y), self._font, self._font_scale, self._text_color, self._font_thickness)
 
         return frame
+
+    def show_date(self, frame):
+        date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        return cv2.putText(frame, date, (self._text_margin, frame.shape[0] - self._text_margin), self._font, 0.7, (255, 255, 2555))
+
+    def show_label(self, frame):
+        scale = 0.7
+        thickness = 1
+        size = cv2.getTextSize(self._label, self._font, scale, thickness)
+        x = frame.shape[1] - size[0][0] - self._text_margin
+        y = frame.shape[0] - self._text_margin
+        return cv2.putText(frame, self._label, (x, y), self._font, scale, (255, 255, 2555), thickness)
 
     def limit_fps(self):
         delay = 1000.0 / float(self._fps_limit)
@@ -143,6 +169,12 @@ class VideoStream:
         if self._fps_show:
             frame = self.show_fps(frame)
 
+        if self._show_date:
+            frame = self.show_date(frame)
+
+        if self._show_label and self._label:
+            frame = self.show_label(frame)
+
         ret, jpeg = cv2.imencode('.jpg', frame)
 
         if not ret:
@@ -152,25 +184,25 @@ class VideoStream:
         return True, jpeg.tobytes()
 
 
-class RtspStream(VideoStream):
+class NetworkStream(VideoStream):
     def __init__(self, url: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._logger.debug('Initializing RTSP video stream with URL %s', url)
+        self._logger.debug('Initializing network video stream with URL %s', url)
         self._url = url
         self._stream = cv2.VideoCapture(url)
 
     def __str__(self):
-        return f'RtspStream({self._url})'
+        return f'NetworkStream({self._url})'
 
     def __del__(self):
-        self._logger.debug('Destroying RTSP video stream')
+        self._logger.debug('Destroying network video stream')
         self._stream.release()
 
     def read(self):
         ret, frame = self._stream.read()
 
         if not ret:
-            self._logger.warning('Unable to read frame from RTSP stream')
+            self._logger.warning('Unable to read frame from network stream')
             return False, None
 
         return ret, frame

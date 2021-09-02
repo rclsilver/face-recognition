@@ -2,7 +2,7 @@ import logging
 
 from app.models import Camera
 from app.schemas import CameraCreate, CameraUpdate
-from app.streaming import VideoStream, RtspStream
+from app.streaming import VideoStream, NetworkStream
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
@@ -52,7 +52,7 @@ class StreamingController:
     def get_stream(cls, db: Session, id: UUID) -> VideoStream:
         camera = cls.get_camera(db, id)
 
-        return RtspStream(
+        return NetworkStream(
             camera.url,
             db,
             label=camera.label,
