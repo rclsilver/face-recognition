@@ -4,8 +4,18 @@ import { CameraListComponent } from './cameras/camera-list/camera-list.component
 import { IdentityListComponent } from './identities/identity-list/identity-list.component';
 import { LearnComponent } from './recognition/learn/learn.component';
 import { QueryComponent } from './recognition/query/query.component';
+import { UserListComponent } from './users/user-list/user-list.component';
 
 const routes: Routes = [
+  {
+    path: 'users',
+    children: [
+      {
+        path: '',
+        component: UserListComponent,
+      },
+    ],
+  },
   {
     path: 'identities',
     children: [

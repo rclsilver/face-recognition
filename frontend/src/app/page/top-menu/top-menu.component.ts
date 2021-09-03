@@ -23,6 +23,10 @@ export class TopMenuComponent {
       label: 'Learn',
       path: 'recognition/learn',
     },
+    {
+      label: 'Users',
+      path: 'users',
+    },
   ];
 
   constructor() {}

@@ -5,6 +5,7 @@ import { Camera } from '../models/camera.model';
 import { FaceEncoding } from '../models/face-encoding.model';
 import { Identity } from '../models/identity.model';
 import { Recognition } from '../models/recognition.model';
+import { User } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root',
@@ -31,6 +32,29 @@ export class ApiService {
 
   deleteIdentity(identity: Pick<Identity, 'id'>): Observable<void> {
     return this._http.delete<void>(`/api/identities/${identity.id}`);
+  }
+
+  getUsers(): Observable<User[]> {
+    return this._http.get<User[]>('/api/users/');
+  }
+
+  getUser(user: Pick<User, 'id'>): Observable<Identity> {
+    return this._http.get<Identity>(`/api/identities/${user.id}`);
+  }
+
+  createUser(payload: Pick<User, 'username' | 'is_admin'>): Observable<User> {
+    return this._http.post<User>('/api/users/', payload);
+  }
+
+  updateUser(
+    user: Pick<User, 'id'>,
+    payload: Pick<User, 'is_admin'>
+  ): Observable<User> {
+    return this._http.put<User>(`/api/users/${user.id}`, payload);
+  }
+
+  deleteUser(user: Pick<User, 'id'>): Observable<void> {
+    return this._http.delete<void>(`/api/users/${user.id}`);
   }
 
   getCameras(): Observable<Camera[]> {
