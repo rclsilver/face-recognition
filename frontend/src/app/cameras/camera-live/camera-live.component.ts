@@ -21,7 +21,7 @@ export class CameraLiveComponent implements OnDestroy {
 
   @Input() set camera(value: Camera | undefined) {
     if (value) {
-      this.output!.nativeElement.src = `/api/streaming/cameras/${value.id}/live`;
+      this.output!.nativeElement.src = `/api/cameras/${value.id}/live`;
       this._show$.next(true);
     } else {
       this.output!.nativeElement.src = '';

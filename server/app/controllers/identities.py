@@ -1,8 +1,9 @@
 import shutil
 
 from app.constants import FACES_DIR
-from app.models import FaceEncoding, Identity
-from app.schemas import IdentityCreate, IdentityUpdate
+from app.models.identities import Identity
+from app.models.recognition import FaceEncoding
+from app.schemas.identities import IdentityCreate, IdentityUpdate
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID

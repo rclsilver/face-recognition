@@ -34,25 +34,22 @@ export class ApiService {
   }
 
   getCameras(): Observable<Camera[]> {
-    return this._http.get<Camera[]>('/api/streaming/cameras/');
+    return this._http.get<Camera[]>('/api/cameras/');
   }
 
   createCamera(payload: Pick<Camera, 'label' | 'url'>): Observable<Camera> {
-    return this._http.post<Camera>('/api/streaming/cameras/', payload);
+    return this._http.post<Camera>('/api/cameras/', payload);
   }
 
   updateCamera(
     camera: Pick<Camera, 'id'>,
     payload: Pick<Camera, 'label' | 'url'>
   ): Observable<Camera> {
-    return this._http.put<Camera>(
-      `/api/streaming/cameras/${camera.id}`,
-      payload
-    );
+    return this._http.put<Camera>(`/api/cameras/${camera.id}`, payload);
   }
 
   deleteCamera(camera: Pick<Camera, 'id'>): Observable<void> {
-    return this._http.delete<void>(`/api/streaming/cameras/${camera.id}`);
+    return this._http.delete<void>(`/api/cameras/${camera.id}`);
   }
 
   query(image: Blob): Observable<Recognition[] | null> {

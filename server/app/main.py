@@ -6,7 +6,7 @@ logging.basicConfig(
 )
 
 from app import VERSION
-from app.routers import identities, recognition, streaming
+from app.routers import cameras, identities, recognition
 from fastapi import FastAPI
 
 production = os.getenv('APP_ENV', 'production') == 'production'
@@ -22,4 +22,4 @@ app = FastAPI(
 # Create the routes
 app.include_router(identities.router, prefix='/identities')
 app.include_router(recognition.router, prefix='/recognition')
-app.include_router(streaming.router, prefix='/streaming')
+app.include_router(cameras.router, prefix='/cameras')

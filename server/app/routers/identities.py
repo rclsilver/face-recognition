@@ -1,7 +1,8 @@
 from app.controllers.identities import IdentityController
 from app.controllers.recognition import RecognitionController
 from app.database import get_session
-from app.schemas import FaceEncoding, Identity, IdentityCreate, IdentityUpdate
+from app.schemas.identities import Identity, IdentityCreate, IdentityUpdate
+from app.schemas.recognition import FaceEncoding
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 from typing import List

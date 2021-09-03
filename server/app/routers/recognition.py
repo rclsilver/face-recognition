@@ -1,7 +1,7 @@
 from app.controllers.recognition import RecognitionController
 from app.database import get_session
-from app.schemas import Recognition
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from app.schemas.recognition import Recognition
+from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy.orm import Session
 from typing import List
 

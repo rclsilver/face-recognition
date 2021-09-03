@@ -2,13 +2,14 @@ import cv2
 import face_recognition
 
 from app.constants import FACES_DIR, TMP_DIR
-from app.models import FaceEncoding, Identity
-from app.schemas import Recognition
+from app.models.identities import Identity
+from app.models.recognition import FaceEncoding
+from app.schemas.recognition import Recognition
 from fastapi import UploadFile
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import Any, Tuple
 from uuid import uuid4
+
 
 class RecognitionController:
     @classmethod
@@ -31,10 +32,16 @@ class RecognitionController:
 
     @classmethod
     def get_faces_locations(cls, image):
+        """
+        Return faces locations on an image
+        """
         return face_recognition.face_locations(image)
 
     @classmethod
     def create_face_encoding(cls, db: Session, identity: Identity, image, rect: Tuple[int, int, int, int]) -> FaceEncoding:
+        """
+        Store known face in database
+        """
         encodings = face_recognition.face_encodings(image, known_face_locations=[rect])
 
         if not encodings:
@@ -92,7 +99,7 @@ class RecognitionController:
         ).fetchone()
 
         if row:
-            return {
+            return Recognition(**{
                 'identity': db.query(Identity).get(row[0]),
                 'score': 1 - row[1],
                 'rect': {
@@ -105,6 +112,6 @@ class RecognitionController:
                         'y': rect[2],
                     },
                 },
-            }
+            })
 
         return None

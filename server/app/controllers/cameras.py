@@ -1,7 +1,7 @@
 import logging
 
-from app.models import Camera
-from app.schemas import CameraCreate, CameraUpdate
+from app.models.cameras import Camera
+from app.schemas.cameras import CameraCreate, CameraUpdate
 from app.streaming import VideoStream, NetworkStream
 from sqlalchemy.orm import Session
 from typing import List
@@ -11,7 +11,7 @@ from uuid import UUID
 logger = logging.getLogger(__name__)
 
 
-class StreamingController:
+class CameraController:
     @classmethod
     def get_cameras(cls, db: Session) -> List[Camera]:
         return db.query(Camera).order_by(Camera.label.asc()).all()

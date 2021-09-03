@@ -8,6 +8,10 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 
+class VideoStreamException(Exception):
+    pass
+
+
 class VideoStream:
     """
     Max image width used with face_recognition
@@ -65,7 +69,7 @@ class VideoStream:
             if len(encodings) == 1:
                 result = RecognitionController.identify(self._db, image, (top, right, bottom, left))
                 if result:
-                    label = result['identity'].first_name + ': ' + str(result['score'])
+                    label = f'{result.identity.first_name}: {result.score}'
                 else:
                     label = None
             else:
@@ -190,6 +194,9 @@ class NetworkStream(VideoStream):
         self._logger.debug('Initializing network video stream with URL %s', url)
         self._url = url
         self._stream = cv2.VideoCapture(url)
+
+        if not self._stream.isOpened():
+            raise VideoStreamException('Unable to open network stream')
 
     def __str__(self):
         return f'NetworkStream({self._url})'
