@@ -3,7 +3,7 @@ export const environment = {
   auth: {
     issuer: 'https://sso.betrancourt.net/auth/realms/default',
     clientId: 'face-recognition',
-    debug: true,
+    debug: false,
     adminGroup: '/administrateurs',
   },
 };
