@@ -1,0 +1,19 @@
+<button
+  *ngIf="!(authenticated$ | async)"
+  type="button"
+  class="btn btn sm btn-primary"
+  (click)="login()"
+>
+  Login
+</button>
+<span *ngIf="authenticated$ | async">
+  {{ identity.preferred_username }}
+</span>
+<button
+  *ngIf="authenticated$ | async"
+  type="button"
+  class="btn btn-sm btn-danger"
+  (click)="logout()"
+>
+  Logout
+</button>

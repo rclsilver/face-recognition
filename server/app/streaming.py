@@ -151,6 +151,10 @@ class VideoStream:
     def read(self):
         raise NotImplementedError()
 
+    @property
+    def is_opened(self) -> bool:
+        raise NotImplemented()
+    
     def get_frame(self):
         self._tick = time.time_ns() / 1000000.0
 
@@ -204,6 +208,10 @@ class NetworkStream(VideoStream):
     def __del__(self):
         self._logger.debug('Destroying network video stream')
         self._stream.release()
+
+    @property
+    def is_opened(self) -> bool:
+        return self._stream.isOpened()
 
     def read(self):
         ret, frame = self._stream.read()

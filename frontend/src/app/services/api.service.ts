@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Camera } from '../models/camera.model';
@@ -40,17 +40,6 @@ export class ApiService {
 
   getUser(user: Pick<User, 'id'>): Observable<Identity> {
     return this._http.get<Identity>(`/api/identities/${user.id}`);
-  }
-
-  createUser(payload: Pick<User, 'username' | 'is_admin'>): Observable<User> {
-    return this._http.post<User>('/api/users/', payload);
-  }
-
-  updateUser(
-    user: Pick<User, 'id'>,
-    payload: Pick<User, 'is_admin'>
-  ): Observable<User> {
-    return this._http.put<User>(`/api/users/${user.id}`, payload);
   }
 
   deleteUser(user: Pick<User, 'id'>): Observable<void> {

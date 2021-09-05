@@ -4,10 +4,6 @@
       <i class="fas fa-refresh"></i>
       Refresh
     </button>
-    <button type="button" class="btn btn-primary" (click)="edit()">
-      <i class="fas fa-plus"></i>
-      New user
-    </button>
   </div>
   <table class="table">
     <thead>
@@ -26,13 +22,6 @@
         <td>
           <button
             type="button"
-            class="btn btn-sm btn-primary"
-            (click)="edit(user)"
-          >
-            <i class="fas fa-edit"></i>
-          </button>
-          <button
-            type="button"
             class="btn btn-sm btn-danger"
             (click)="delete(user)"
           >
@@ -42,9 +31,4 @@
       </tr>
     </tbody>
   </table>
-  <app-user-form
-    #form
-    (submit)="refresh()"
-    [ngStyle]="{ display: (form$ | async) ? 'block' : 'none' }"
-  ></app-user-form>
 </div>

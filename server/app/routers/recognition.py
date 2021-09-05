@@ -9,31 +9,6 @@ from typing import List
 router = APIRouter()
 
 
-@router.post('/suggest', response_model=List[Recognition])
-async def suggesst(
-    picture: UploadFile = File(...),
-    db: Session = Depends(get_session)
-) -> List[Recognition]:
-    """
-    Suggest faces on a picture
-    """
-    image = RecognitionController.load_uploaded_file(picture)
-    faces = RecognitionController.get_faces_locations(image)
-
-    if not faces:
-        return None
-
-    results = []
-
-    for face in faces:
-        result = RecognitionController.identify(db, image, face)
-
-        if result:
-            results.append(result)
-
-    return results
-
-
 @router.post('/query', response_model=List[Recognition])
 async def query(
     picture: UploadFile = File(...),

@@ -1,0 +1,7 @@
+version: '3'
+
+services:
+  server:
+    environment:
+      # SSO settings
+      OIDC_ISSUER: 'https://sso.example.com/auth/realms/default'

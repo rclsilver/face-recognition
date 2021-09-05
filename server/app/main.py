@@ -6,11 +6,16 @@ logging.basicConfig(
 )
 
 from app import VERSION
+from app.auth import configure_auth
+from app.auth.oidc import OidcAuth
 from app.routers import cameras, identities, recognition, users
 from fastapi import FastAPI
 
 production = os.getenv('APP_ENV', 'production') == 'production'
 debug_mode = os.getenv('APP_DEBUG', 'false') == 'true'
+
+# Configure authentication
+configure_auth(OidcAuth, os.getenv('OIDC_ISSUER'))
 
 app = FastAPI(
     title='Faces recognition',

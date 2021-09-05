@@ -1,5 +1,7 @@
 import { NgModule } from '@angular/core';
 import { ExtraOptions, RouterModule, Routes } from '@angular/router';
+import { RequireAdminGuard } from './auth/guards/require-admin.guard';
+import { RequireUserGuard } from './auth/guards/require-user.guard';
 import { CameraListComponent } from './cameras/camera-list/camera-list.component';
 import { IdentityListComponent } from './identities/identity-list/identity-list.component';
 import { LearnComponent } from './recognition/learn/learn.component';
@@ -13,6 +15,7 @@ const routes: Routes = [
       {
         path: '',
         component: UserListComponent,
+        canActivate: [RequireUserGuard],
       },
     ],
   },
@@ -22,6 +25,7 @@ const routes: Routes = [
       {
         path: '',
         component: IdentityListComponent,
+        canActivate: [RequireUserGuard],
       },
     ],
   },
@@ -31,6 +35,7 @@ const routes: Routes = [
       {
         path: 'learn',
         component: LearnComponent,
+        canActivate: [RequireAdminGuard],
       },
       {
         path: 'query',
@@ -44,6 +49,7 @@ const routes: Routes = [
       {
         path: '',
         component: CameraListComponent,
+        canActivate: [RequireUserGuard],
       },
     ],
   },
@@ -51,6 +57,7 @@ const routes: Routes = [
 
 const config: ExtraOptions = {
   useHash: true,
+  initialNavigation: 'disabled',
 };
 
 @NgModule({

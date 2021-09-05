@@ -18,7 +18,8 @@ import { CameraListComponent } from './cameras/camera-list/camera-list.component
 import { CameraFormComponent } from './cameras/camera-form/camera-form.component';
 import { CameraLiveComponent } from './cameras/camera-live/camera-live.component';
 import { UserListComponent } from './users/user-list/user-list.component';
-import { UserFormComponent } from './users/user-form/user-form.component';
+import { AuthModule } from './auth/auth.module';
+import { UserMenuComponent } from './page/user-menu/user-menu.component';
 
 @NgModule({
   declarations: [
@@ -34,7 +35,7 @@ import { UserFormComponent } from './users/user-form/user-form.component';
     CameraFormComponent,
     CameraLiveComponent,
     UserListComponent,
-    UserFormComponent,
+    UserMenuComponent,
   ],
   imports: [
     BrowserModule,
@@ -42,6 +43,7 @@ import { UserFormComponent } from './users/user-form/user-form.component';
     HttpClientModule,
     FormsModule,
     WebcamModule,
+    AuthModule.forRoot(),
   ],
   providers: [],
   bootstrap: [AppComponent],

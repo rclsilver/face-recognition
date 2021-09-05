@@ -2,7 +2,6 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { User } from 'src/app/models/user.model';
 import { ApiService } from 'src/app/services/api.service';
-import { UserFormComponent } from '../user-form/user-form.component';
 
 @Component({
   selector: 'app-user-list',
@@ -16,8 +15,6 @@ export class UserListComponent implements OnInit {
   private _form$ = new BehaviorSubject<boolean>(false);
   readonly form$ = this._form$.asObservable();
 
-  @ViewChild('form') form?: UserFormComponent;
-
   constructor(private _api: ApiService) {}
 
   ngOnInit(): void {
@@ -30,11 +27,6 @@ export class UserListComponent implements OnInit {
 
     // Hide the form
     this._form$.next(false);
-  }
-
-  edit(user?: User): void {
-    this.form!.user = user;
-    this._form$.next(true);
   }
 
   delete(user: User): void {

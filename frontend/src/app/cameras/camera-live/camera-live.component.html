@@ -5,6 +5,8 @@
         <i class="fas fa-window-close"></i>
       </button>
     </div>
-    <img #output>
+    <img #output [ngStyle]="{ display: (loading$ | async) ? 'none' : 'block' }">
+    <p *ngIf="loading$ | async">Loading...</p>
+    <p class="text-danger" *ngIf="error$ | async">Unable to fetch camera stream</p>
   </div>
 </div>

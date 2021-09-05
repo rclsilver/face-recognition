@@ -61,10 +61,10 @@ class CameraController:
 
     @classmethod
     def live(cls, stream: VideoStream):
-        try:
-            logger.debug('Starting streaming with %s', stream)
+        logger.debug('Starting streaming with %s', stream)
 
-            while True:
+        try:
+            while stream.is_opened:
                 ret, frame = stream.get_frame()
 
                 if not ret:
@@ -77,4 +77,6 @@ class CameraController:
                     b'\r\n\r\n'
                 )
         except GeneratorExit:
-            logger.debug('Stop streaming of %s', stream)
+            pass
+
+        logger.debug('Stop streaming of %s', stream)
