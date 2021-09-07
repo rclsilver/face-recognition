@@ -1,14 +1,15 @@
 import cv2
 import face_recognition
+import shutil
 
-from app.constants import FACES_DIR, TMP_DIR
+from app.constants import FACES_DIR, QUERIES_DIR, TMP_DIR
 from app.models.identities import Identity
-from app.models.recognition import FaceEncoding
+from app.models.recognition import FaceEncoding, Query, Suggestion
 from app.schemas.recognition import Recognition
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
-from typing import Any, Tuple
-from uuid import uuid4
+from typing import Any, List, Optional, Tuple
+from uuid import uuid4, UUID
 
 
 class RecognitionController:
@@ -31,7 +32,7 @@ class RecognitionController:
         return image
 
     @classmethod
-    def get_faces_locations(cls, image):
+    def get_faces_locations(cls, image) -> List[tuple[int, int, int, int]]:
         """
         Return faces locations on an image
         """
@@ -70,6 +71,102 @@ class RecognitionController:
         db.commit()
 
         return result
+
+    @classmethod
+    def query(cls, db: Session, image: Any, faces: List[tuple[int, int, int, int]]) -> List[Recognition]:
+        """
+        Create a new query in database
+        """
+        query = Query()
+
+        db.add(query)
+        db.flush()
+
+        query_dir = QUERIES_DIR / str(query.id)
+
+        if not query_dir.exists():
+            query_dir.mkdir(parents=True)
+
+        # Store the full image
+        if not cv2.imwrite(str(query_dir / 'full.png'), image):
+            raise Exception('Unable to write query full image')
+
+        result = []
+
+        for (top, right, bottom, left) in faces:
+            recognition = cls.identify(db, image, (top, right, bottom, left))
+
+            if recognition:
+                result.append(recognition)
+
+            suggestion = Suggestion()
+            suggestion.query_id = query.id
+            suggestion.rect = [top, right, bottom, left]
+
+            if recognition:
+                suggestion.identity_id = recognition.identity.id
+                suggestion.score = recognition.score
+
+            db.add(suggestion)
+            db.flush()
+
+            # Write the suggestion file
+            if not cv2.imwrite(str(query_dir / f'{suggestion.id}.png'), image[top:bottom, left:right]):
+                raise Exception('Unable to write suggestion image')
+
+        db.commit()
+
+        return result
+
+    @classmethod
+    def get_queries(cls, db: Session) -> List[Query]:
+        """
+        Get queries in database
+        """
+        return db.query(Query).order_by(Query.created_at.asc()).all()
+
+    @classmethod
+    def get_query(cls, db: Session, id: UUID) -> Query:
+        return db.query(Query).filter_by(id=id).one()
+
+    @classmethod
+    def get_suggestion(cls, db: Session, query_id: UUID, suggestion_id: UUID) -> Suggestion:
+        return db.query(Suggestion).filter_by(query_id=query_id, id=suggestion_id).one()
+
+    @classmethod
+    def confirm_suggestion(cls, db: Session, query_id: UUID, suggestion_id: UUID, identity: Optional[Identity] = None) -> FaceEncoding:
+        suggestion = cls.get_suggestion(db, query_id, suggestion_id)
+        suggestion_file = QUERIES_DIR / str(suggestion.query.id) / (str(suggestion.id) + '.png')
+
+        if not suggestion_file.exists():
+            raise Exception('Face file not found')
+
+        image = cv2.imread(str(suggestion_file))
+        identity = identity if identity else suggestion.identity
+        encoding = cls.create_face_encoding(db, identity, image, (0, image.shape[1], image.shape[0], 0))
+
+        cls.delete_suggestion(db, query_id, suggestion_id)
+
+        return encoding
+
+    @classmethod
+    def delete_suggestion(cls, db: Session, query_id: UUID, suggestion_id: UUID) -> None:
+        suggestion = cls.get_suggestion(db, query_id, suggestion_id)
+        query = suggestion.query
+
+        db.delete(suggestion)
+        db.flush()
+
+        suggestion_file = QUERIES_DIR / str(suggestion.query.id) / (str(suggestion.id) + '.png')
+
+        if not query.suggestions:
+            if suggestion_file.parent.exists():
+                shutil.rmtree(suggestion_file.parent)
+            db.delete(query)
+        elif suggestion_file.exists():
+            suggestion_file.unlink()
+
+        db.commit()
 
     @classmethod
     def identify(cls, db: Session, image, rect: Tuple[int, int, int, int], threshold: float = 0.6) -> Recognition:

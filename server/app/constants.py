@@ -16,3 +16,9 @@ TMP_DIR = DATA_DIR / 'temp'
 Recorded faces
 """
 FACES_DIR = DATA_DIR / 'faces'
+
+
+"""
+Query directory
+"""
+QUERIES_DIR = DATA_DIR / 'queries'

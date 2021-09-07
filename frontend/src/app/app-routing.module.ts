@@ -4,6 +4,7 @@ import { RequireAdminGuard } from './auth/guards/require-admin.guard';
 import { RequireUserGuard } from './auth/guards/require-user.guard';
 import { CameraListComponent } from './cameras/camera-list/camera-list.component';
 import { IdentityListComponent } from './identities/identity-list/identity-list.component';
+import { QueryListComponent } from './queries/query-list/query-list.component';
 import { LearnComponent } from './recognition/learn/learn.component';
 import { QueryComponent } from './recognition/query/query.component';
 import { UserListComponent } from './users/user-list/user-list.component';
@@ -26,6 +27,16 @@ const routes: Routes = [
         path: '',
         component: IdentityListComponent,
         canActivate: [RequireUserGuard],
+      },
+    ],
+  },
+  {
+    path: 'queries',
+    children: [
+      {
+        path: '',
+        component: QueryListComponent,
+        canActivate: [RequireAdminGuard],
       },
     ],
   },

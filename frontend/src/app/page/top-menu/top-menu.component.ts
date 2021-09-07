@@ -20,6 +20,11 @@ export class TopMenuComponent {
       allowed$: this._auth.authenticated$,
     },
     {
+      label: 'Queries',
+      path: 'queries',
+      allowed$: this._auth.administrator$,
+    },
+    {
       label: 'Query',
       path: 'recognition/query',
       allowed$: of(true),
@@ -27,12 +32,12 @@ export class TopMenuComponent {
     {
       label: 'Learn',
       path: 'recognition/learn',
-      allowed$: this._auth.authenticated$,
+      allowed$: this._auth.administrator$,
     },
     {
       label: 'Users',
       path: 'users',
-      allowed$: this._auth.authenticated$,
+      allowed$: this._auth.administrator$,
     },
   ];
 

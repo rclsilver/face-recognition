@@ -20,6 +20,7 @@ import { CameraLiveComponent } from './cameras/camera-live/camera-live.component
 import { UserListComponent } from './users/user-list/user-list.component';
 import { AuthModule } from './auth/auth.module';
 import { UserMenuComponent } from './page/user-menu/user-menu.component';
+import { QueryListComponent } from './queries/query-list/query-list.component';
 
 @NgModule({
   declarations: [
@@ -36,6 +37,7 @@ import { UserMenuComponent } from './page/user-menu/user-menu.component';
     CameraLiveComponent,
     UserListComponent,
     UserMenuComponent,
+    QueryListComponent,
   ],
   imports: [
     BrowserModule,

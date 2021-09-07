@@ -1,8 +1,11 @@
+from app.auth import check_is_admin, get_user
 from app.controllers.recognition import RecognitionController
 from app.database import get_session
-from app.schemas.recognition import Recognition
+from app.models.users import User
+from app.schemas.recognition import FaceEncoding, Query, QueryConfirm, QuerySuggestion, Recognition
 from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy.orm import Session
+from uuid import UUID
 from typing import List
 
 
@@ -23,16 +26,73 @@ async def query(
     if not faces:
         return None
 
-    results = []
+    return RecognitionController.query(db, image, faces)
 
-    for face in faces:
-        result = RecognitionController.identify(db, image, face)
 
-        if result:
-            results.append(result)
+@router.get('/queries', response_model=List[Query])
+async def get_queries(
+    user: User = Depends(get_user),
+    db: Session = Depends(get_session)
+) -> List[Query]:
+    """
+    List recorded queries
+    """
+    check_is_admin(user)
 
-    # ici on enregistre la photo dans data/query/uuid
-    # on propose une liste de reconnaissances pour chaque visage
-    # on enregistre les résultat dans une table query
+    return list(
+        Query(**{
+            'id': query.id,
+            'created_at': query.created_at,
+            'updated_at': query.updated_at,
+            'suggestions': [
+                QuerySuggestion(**{
+                    'id': suggestion.id,
+                    'created_at': suggestion.created_at,
+                    'updated_at': suggestion.updated_at,
+                    'rect': {
+                        'start': {
+                            'x': suggestion.rect[3],
+                            'y': suggestion.rect[0],
+                        },
+                        'end': {
+                            'x': suggestion.rect[1],
+                            'y': suggestion.rect[2],
+                        },
+                    },
+                    'score': suggestion.score,
+                    'identity': suggestion.identity,
+                }) for suggestion in query.suggestions
+            ],
+        }) for query in RecognitionController.get_queries(db)
+    )
 
-    return results
+
+@router.post('/queries/{query_id}/{suggestion_id}', response_model=FaceEncoding)
+async def confirm_suggestion(
+    query_id: UUID,
+    suggestion_id: UUID,
+    payload: QueryConfirm,
+    user: User = Depends(get_user),
+    db: Session = Depends(get_session)
+) -> FaceEncoding:
+    """
+    Confirm a query suggestion
+    """
+    check_is_admin(user)
+
+    return RecognitionController.confirm_suggestion(db, query_id, suggestion_id, payload.identity)
+
+
+@router.delete('/queries/{query_id}/{suggestion_id}')
+async def delete_suggestion(
+    query_id: UUID,
+    suggestion_id: UUID,
+    user: User = Depends(get_user),
+    db: Session = Depends(get_session)
+) -> None:
+    """
+    Delete a query suggestion
+    """
+    check_is_admin(user)
+
+    return RecognitionController.delete_suggestion(db, query_id, suggestion_id)

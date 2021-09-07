@@ -1,0 +1,60 @@
+<div class="container-fluid">
+  <div class="table-header">
+    <button type="button" class="btn btn-secondary" (click)="refresh()">
+      Refresh
+    </button>
+  </div>
+  <table class="table queries">
+    <thead>
+      <tr>
+        <th scope="col">Picture</th>
+        <th scope="col">Identity</th>
+        <th scope="col">Score</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let query of queries$ | async">
+        <tr *ngFor="let suggestion of query.suggestions">
+          <th scope="col">
+            <img src="/assets/queries/{{ query.id }}/{{ suggestion.id }}.png" />
+          </th>
+          <td>
+            <select [(ngModel)]="suggestion.identity" [compareWith]="compare">
+              <option [value]="null" disabled="disabled">
+                -- Select an identity --
+              </option>
+              <option
+                *ngFor="let identity of identities$ | async"
+                [ngValue]="identity"
+              >
+                {{ identity.first_name }} {{ identity.last_name }}
+              </option>
+            </select>
+          </td>
+          <td>
+            <span *ngIf="suggestion.score">{{ suggestion.score * 100 | number: "1.0-0" }}%</span>
+            <span *ngIf="!suggestion.score">-</span>
+          </td>
+          <td class="actions">
+            <button
+              type="button"
+              class="btn btn-sm btn-primary"
+              (click)="confirm(query, suggestion)"
+              [disabled]="!suggestion.identity"
+            >
+              Confirm
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-danger"
+              (click)="delete(query, suggestion)"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+</div>

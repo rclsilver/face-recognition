@@ -4,7 +4,9 @@ import { Observable } from 'rxjs';
 import { Camera } from '../models/camera.model';
 import { FaceEncoding } from '../models/face-encoding.model';
 import { Identity } from '../models/identity.model';
+import { Query } from '../models/query.model';
 import { Recognition } from '../models/recognition.model';
+import { Suggestion } from '../models/suggestion.model';
 import { User } from '../models/user.model';
 
 @Injectable({
@@ -72,6 +74,28 @@ export class ApiService {
     return this._http.post<Recognition[] | null>(
       '/api/recognition/query',
       payload
+    );
+  }
+
+  getQueries(): Observable<Query[]> {
+    return this._http.get<Query[]>('/api/recognition/queries');
+  }
+
+  confirmSuggestion(
+    query: Query,
+    suggestion: Suggestion
+  ): Observable<Recognition> {
+    return this._http.post<Recognition>(
+      `/api/recognition/queries/${query.id}/${suggestion.id}`,
+      {
+        identity: suggestion.identity,
+      }
+    );
+  }
+
+  deleteSuggestion(query: Query, suggestion: Suggestion): Observable<void> {
+    return this._http.delete<void>(
+      `/api/recognition/queries/${query.id}/${suggestion.id}`
     );
   }
 
