@@ -20,11 +20,15 @@ else
     groupmod -o -g "${APP_GID:=1000}" app
     usermod -o -u "${APP_UID:=1000}" app
 
-    # Use gunicorn to run the application
-    gunicorn \
-        -u app -g app \
-        -w ${GUNICORN_WORKERS:-5} \
-        -k uvicorn.workers.UvicornWorker \
-        -b ${LISTEN_HOST}:${LISTEN_PORT} \
-        ${APP_ENTRY_POINT}
+    if [ "${APP_TYPE:=server}" == "server" ]; then
+        # Use gunicorn to run the application
+        gunicorn \
+            -u app -g app \
+            -w ${GUNICORN_WORKERS:-5} \
+            -k uvicorn.workers.UvicornWorker \
+            -b ${LISTEN_HOST}:${LISTEN_PORT} \
+            ${APP_ENTRY_POINT}
+    elif [ "${APP_TYPE}" == "cameras" ]; then
+        su app -c "python /usr/src/main.py cameras run"
+    fi
 fi
