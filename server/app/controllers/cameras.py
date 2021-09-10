@@ -1,8 +1,8 @@
 import logging
 
+from app.cameras.clients import SocketClient
 from app.models.cameras import Camera
 from app.schemas.cameras import CameraCreate, CameraUpdate
-from app.streaming import VideoStream, NetworkStream
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
@@ -49,27 +49,18 @@ class CameraController:
         db.commit()
 
     @classmethod
-    def get_stream(cls, db: Session, id: UUID) -> VideoStream:
+    def get_stream(cls, db: Session, id: UUID) -> SocketClient:
         camera = cls.get_camera(db, id)
+        client = SocketClient(camera)
 
-        return NetworkStream(
-            camera.url,
-            db,
-            label=camera.label,
-            force_width=800
-        )
+        return client
 
     @classmethod
-    def live(cls, stream: VideoStream):
-        logger.debug('Starting streaming with %s', stream)
+    def live(cls, client: SocketClient):
+        logger.debug('Starting streaming of camera %s', client.camera.id)
 
         try:
-            while stream.is_opened:
-                ret, frame = stream.get_frame()
-
-                if not ret:
-                    continue
-
+            for frame in client:
                 yield (
                     b'--frame\r\n' +
                     b'Content-Type: image/jpeg\r\n\r\n' +
@@ -79,4 +70,6 @@ class CameraController:
         except GeneratorExit:
             pass
 
-        logger.debug('Stop streaming of %s', stream)
+        client.close()
+
+        logger.debug('Stop streaming of camera %s', client.camera.id)

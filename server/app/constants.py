@@ -22,3 +22,15 @@ FACES_DIR = DATA_DIR / 'faces'
 Query directory
 """
 QUERIES_DIR = DATA_DIR / 'queries'
+
+
+"""
+Records directory
+"""
+RECORDS_DIR = DATA_DIR / 'records'
+
+
+"""
+Sockets directory
+"""
+SOCKET_DIR = Path('/sockets')

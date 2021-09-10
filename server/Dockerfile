@@ -27,7 +27,9 @@ RUN set -eux \
     && apt-get update \
     && apt-get install -y \
         cmake \
-        ffmpeg
+        ffmpeg \
+    && apt-get -qq clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy application
 COPY . /usr/src/

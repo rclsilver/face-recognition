@@ -2,7 +2,7 @@
 
 LISTEN_HOST=0.0.0.0
 LISTEN_PORT=8000
-APP_ENTRY_POINT=app.main:app
+APP_ENTRY_POINT=main:app
 
 # Development mode
 if [ "${APP_ENV:=production}" == "development" ]; then
