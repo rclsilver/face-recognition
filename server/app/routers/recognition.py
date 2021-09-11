@@ -3,7 +3,7 @@ from app.controllers.recognition import RecognitionController
 from app.database import get_session
 from app.models.users import User
 from app.schemas.recognition import FaceEncoding, Query, QueryConfirm, QuerySuggestion, Recognition
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, UploadFile
 from sqlalchemy.orm import Session
 from uuid import UUID
 from typing import List
@@ -72,6 +72,7 @@ async def confirm_suggestion(
     query_id: UUID,
     suggestion_id: UUID,
     payload: QueryConfirm,
+    background_tasks: BackgroundTasks,
     user: User = Depends(get_user),
     db: Session = Depends(get_session)
 ) -> FaceEncoding:
@@ -80,7 +81,9 @@ async def confirm_suggestion(
     """
     check_is_admin(user)
 
-    return RecognitionController.confirm_suggestion(db, query_id, suggestion_id, payload.identity)
+    encoding = RecognitionController.confirm_suggestion(db, query_id, suggestion_id, payload.identity)
+    background_tasks.add_task(RecognitionController.compute_suggestions, db)
+    return encoding
 
 
 @router.delete('/queries/{query_id}/{suggestion_id}')

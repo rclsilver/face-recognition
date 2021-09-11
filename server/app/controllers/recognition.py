@@ -1,5 +1,6 @@
 import cv2
 import face_recognition
+import logging
 import shutil
 
 from app.constants import FACES_DIR, QUERIES_DIR, TMP_DIR
@@ -10,6 +11,9 @@ from fastapi import UploadFile
 from sqlalchemy.orm import Session
 from typing import Any, List, Optional, Tuple
 from uuid import uuid4, UUID
+
+
+logger = logging.getLogger(__name__)
 
 
 class RecognitionController:
@@ -136,13 +140,17 @@ class RecognitionController:
         return db.query(Query).filter_by(id=id).one()
 
     @classmethod
+    def get_suggestions(cls, db: Session) -> List[Suggestion]:
+        return db.query(Suggestion).all()
+
+    @classmethod
     def get_suggestion(cls, db: Session, query_id: UUID, suggestion_id: UUID) -> Suggestion:
         return db.query(Suggestion).filter_by(query_id=query_id, id=suggestion_id).one()
 
     @classmethod
     def confirm_suggestion(cls, db: Session, query_id: UUID, suggestion_id: UUID, identity: Optional[Identity] = None) -> FaceEncoding:
         suggestion = cls.get_suggestion(db, query_id, suggestion_id)
-        suggestion_file = QUERIES_DIR / str(suggestion.query.id) / (str(suggestion.id) + '.png')
+        suggestion_file = QUERIES_DIR / str(suggestion.query.id) / 'full.png'
 
         if not suggestion_file.exists():
             raise Exception('Face file not found')
@@ -173,6 +181,43 @@ class RecognitionController:
             suggestion_file.unlink()
 
         db.commit()
+
+    @classmethod
+    def compute_suggestions(cls, db: Session, confidence_threshold: float = 0.6):
+        """
+        Recompute all existing suggestions
+        """
+        for suggestion in cls.get_suggestions(db):
+            image_file = QUERIES_DIR / str(suggestion.query.id) / 'full.png'
+            
+            if not image_file.exists():
+                logger.warning('No file found for suggestion %s: %s', suggestion.id, image_file)
+                continue
+
+            image = cv2.imread(str(image_file))
+            new_prediction = cls.identify(db, image, suggestion.rect)
+
+            old_identity = suggestion.identity
+            old_score = suggestion.score
+
+            suggestion.identity_id = new_prediction.identity.id if new_prediction.identity else None
+            suggestion.score = new_prediction.score
+            db.commit()
+
+            if suggestion.score is not None and suggestion.score >= confidence_threshold:
+                # New prediction is relevant
+                logger.info('Validating suggestion %s with a score of %.02f', suggestion.id, suggestion.score)
+                cls.confirm_suggestion(db, suggestion.query_id, suggestion.id, suggestion.identity)
+            else:
+                # We update the suggestion
+                logger.info(
+                    'Updating suggestion %s: Identity[%s] -> Identity[%s] - Score[%.02f] -> Score[%.02f]',
+                    suggestion.id,
+                    f'{old_identity.first_name} {old_identity.last_name}' if old_identity else 'None',
+                    f'{new_prediction.identity.first_name} {new_prediction.identity.last_name}' if new_prediction.identity else 'None',
+                    old_score if old_score is not None else 0.0,
+                    suggestion.score if suggestion.score is not None else 0.0,
+                )
 
     @classmethod
     def identify(cls, db: Session, image, rect: Tuple[int, int, int, int], threshold: float = 0.6) -> Recognition:
