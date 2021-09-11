@@ -1,3 +1,4 @@
+import base64
 import cv2
 import face_recognition
 import logging
@@ -6,7 +7,7 @@ import shutil
 from app.constants import FACES_DIR, QUERIES_DIR, TMP_DIR
 from app.models.identities import Identity
 from app.models.recognition import FaceEncoding, Query, Suggestion
-from app.schemas.recognition import Recognition
+from app.schemas.recognition import QueryResult, Recognition
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
 from typing import Any, List, Optional, Tuple
@@ -77,7 +78,7 @@ class RecognitionController:
         return result
 
     @classmethod
-    def query(cls, db: Session, image: Any, faces: List[tuple[int, int, int, int]], confidence_threshold: float = 0.6) -> List[Recognition]:
+    def query(cls, db: Session, image: Any, faces: List[tuple[int, int, int, int]], confidence_threshold: float = 0.6, returns_picture: bool = False) -> QueryResult:
         """
         Create a new query in database
         """
@@ -95,11 +96,14 @@ class RecognitionController:
         if not cv2.imwrite(str(query_dir / 'full.png'), image):
             raise Exception('Unable to write query full image')
 
-        result = []
+        result = {
+            'recognitions': [],
+            'picture': None
+        }
 
         for (top, right, bottom, left) in faces:
             recognition = cls.identify(db, image, (top, right, bottom, left))
-            result.append(recognition)
+            result['recognitions'].append(recognition)
 
             # Record the query only if identity is not found or if score is below the confidence threshold
             if recognition.score is None or recognition.score < confidence_threshold:
@@ -126,7 +130,65 @@ class RecognitionController:
             db.rollback()
             shutil.rmtree(query_dir)
 
-        return result
+        # Build the result image
+        if returns_picture:
+            if image.shape[1] > 640:
+                ratio = 640 / image.shape[1]
+                image = cv2.resize(image, (0, 0), fx=ratio, fy=ratio)
+            else:
+                ratio = 1
+
+            font = cv2.FONT_HERSHEY_COMPLEX
+            scale = 1
+            thickness = 1
+            margin = 5
+            color_found = (0, 255, 0)
+            color_not_found = (0, 0, 255)
+
+            for recognition in result['recognitions']:
+                rect_start = (
+                    int(recognition.rect.start.x * ratio),
+                    int(recognition.rect.start.y * ratio),
+                )
+                rect_end = (
+                    int(recognition.rect.end.x * ratio),
+                    int(recognition.rect.end.y * ratio),
+                )
+                cv2.rectangle(image, rect_start, rect_end, color_found if recognition.identity else color_not_found, thickness)
+
+                if recognition.identity:
+                    rect_width = rect_end[0] - rect_start[0]
+
+                    name = '{} {}.'.format(
+                        recognition.identity.first_name,
+                        recognition.identity.last_name[0]
+                    )
+                    name_size = cv2.getTextSize(name, font, scale, thickness)[0]
+                    name_pos = (
+                        int(rect_start[0] + (rect_width - name_size[0]) / 2),
+                        rect_end[1] + name_size[1] + margin
+                    )
+
+                    score = '{}%'.format(int(recognition.score * 100))
+                    score_size = cv2.getTextSize(score, font, scale * .8, thickness)[0]
+                    score_pos = (
+                        int(rect_start[0] + (rect_width - score_size[0]) / 2),
+                        name_pos[1] + score_size[1] + margin
+                    )
+
+                    cv2.putText(image, name, name_pos, font, scale, color_found, thickness)
+                    cv2.putText(image, score, score_pos, font, scale * .8, color_found, thickness)
+
+            ret, jpeg = cv2.imencode('.jpg', image)
+
+            if ret:
+                result['picture'] = 'data:image/jpeg;base64,{}'.format(
+                    base64.b64encode(
+                        jpeg.tobytes()
+                    ).decode('utf-8')
+                )
+
+        return QueryResult(**result)
 
     @classmethod
     def get_queries(cls, db: Session) -> List[Query]:
@@ -150,7 +212,7 @@ class RecognitionController:
     @classmethod
     def confirm_suggestion(cls, db: Session, query_id: UUID, suggestion_id: UUID, identity: Optional[Identity] = None) -> FaceEncoding:
         suggestion = cls.get_suggestion(db, query_id, suggestion_id)
-        suggestion_file = QUERIES_DIR / str(suggestion.query.id) / 'full.png'
+        suggestion_file = QUERIES_DIR / str(suggestion.query.id) / f'{suggestion.id}.png'
 
         if not suggestion_file.exists():
             raise Exception('Face file not found')

@@ -11,7 +11,6 @@ import { IdentityListComponent } from './identities/identity-list/identity-list.
 import { LearnComponent } from './recognition/learn/learn.component';
 import { QueryComponent } from './recognition/query/query.component';
 import { WebcamComponent } from './recognition/webcam/webcam.component';
-import { ResultComponent } from './recognition/result/result.component';
 import { IdentityFormComponent } from './identities/identity-form/identity-form.component';
 import { FormsModule } from '@angular/forms';
 import { CameraListComponent } from './cameras/camera-list/camera-list.component';
@@ -30,7 +29,6 @@ import { QueryListComponent } from './queries/query-list/query-list.component';
     LearnComponent,
     QueryComponent,
     WebcamComponent,
-    ResultComponent,
     IdentityFormComponent,
     CameraListComponent,
     CameraFormComponent,

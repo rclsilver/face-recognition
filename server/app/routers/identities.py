@@ -69,12 +69,25 @@ async def delete_identity(
     identity_id: UUID,
     user: User = Depends(get_user),
     db: Session = Depends(get_session)
-) -> Identity:
+):
     """
     Delete identity
     """
     check_is_admin(user)
     return IdentityController.delete_identity(db, identity_id)
+
+
+@router.post('/{identity_id}/clear')
+async def clear_identity(
+    identity_id: UUID,
+    user: User = Depends(get_user),
+    db: Session = Depends(get_session)
+):
+    """
+    Clear identity encodings
+    """
+    check_is_admin(user)
+    return IdentityController.clear_identity(db, identity_id)
 
 
 @router.post('/{identity_id}/learn', response_model=FaceEncoding)

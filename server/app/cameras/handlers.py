@@ -58,11 +58,11 @@ class RecognitionHandler(FrameHandler):
                     self._stream.increase_record(self._record_increase_timeout)
 
             # Fetch identities
-            prediction = RecognitionController.query(self._db, image, locations)
+            result = RecognitionController.query(self._db, image, locations)
 
-            for result in prediction:
-                if result.identity:
-                    self._logger.debug('Found %s with score of %.02f %%', result.identity.first_name, result.score)
+            for recognition in result.recognitions:
+                if recognition.identity:
+                    self._logger.debug('Found %s with score of %.02f %%', recognition.identity.first_name, recognition.score)
                 else:
                     self._logger.debug('Found unknown person')
             self._tracker.add('Identify')

@@ -48,6 +48,17 @@ class Recognition(BaseModel):
         orm_mode = True
 
 
+class QueryResult(BaseModel):
+    """
+    Result of a query
+    """
+    recognitions: List[Recognition]
+    picture: Optional[str]
+
+    class Config:
+        orm_mode = True
+
+
 class QuerySuggestion(Base):
     """
     Recognition query suggestion

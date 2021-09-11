@@ -2,7 +2,7 @@ from app.auth import check_is_admin, get_user
 from app.controllers.recognition import RecognitionController
 from app.database import get_session
 from app.models.users import User
-from app.schemas.recognition import FaceEncoding, Query, QueryConfirm, QuerySuggestion, Recognition
+from app.schemas.recognition import FaceEncoding, Query, QueryConfirm, QuerySuggestion, QueryResult
 from fastapi import APIRouter, BackgroundTasks, Depends, File, UploadFile
 from sqlalchemy.orm import Session
 from uuid import UUID
@@ -12,11 +12,12 @@ from typing import List
 router = APIRouter()
 
 
-@router.post('/query', response_model=List[Recognition])
+@router.post('/query', response_model=QueryResult)
 async def query(
     picture: UploadFile = File(...),
+    returns: bool = False,
     db: Session = Depends(get_session)
-) -> List[Recognition]:
+) -> QueryResult:
     """
     Ask to recognize faces on a picture
     """
@@ -26,7 +27,7 @@ async def query(
     if not faces:
         return None
 
-    return RecognitionController.query(db, image, faces)
+    return RecognitionController.query(db, image, faces, returns_picture=returns)
 
 
 @router.get('/queries', response_model=List[Query])

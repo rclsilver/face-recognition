@@ -1,10 +1,28 @@
 <div class="content">
-  <app-webcam
-    *ngIf="!(result$ | async)"
-    (snapshot)="onCapture($event)"
-  ></app-webcam>
-  <button *ngIf="!(result$ | async)" (click)="query()">Query</button>
+  <div *ngIf="uploadMode$ | async" class="upload">
+    <input *ngIf="!(result$ | async)" type="file" (change)="onUpload($event)" />
+  </div>
+  <div *ngIf="webcamMode$ | async" class="webcam">
+    <app-webcam
+      *ngIf="!(result$ | async)"
+      (snapshot)="onCapture($event)"
+    ></app-webcam>
+    <button *ngIf="!(result$ | async)" (click)="query()">Query</button>
+  </div>
+  <p *ngIf="progress$ | async as progress" class="uploading">
+    Uploading picture
+  </p>
   <p *ngIf="notFound$ | async">Not found!</p>
-  <app-result [result]="result$"></app-result>
-  <button *ngIf="result$ | async" (click)="reset()">Reset</button>
+  <div *ngIf="result$ | async as result" class="result">
+    <img src="{{ result.picture }}">
+    <button (click)="reset()">Reset</button>
+  </div>
+  <div class="modes">
+    <button *ngIf="!(uploadMode$ | async)" (click)="setUploadMode()">
+      Upload mode
+    </button>
+    <button *ngIf="!(webcamMode$ | async)" (click)="setWebcamMode()">
+      Webcam mode
+    </button>
+  </div>
 </div>

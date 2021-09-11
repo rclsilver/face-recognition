@@ -42,4 +42,8 @@ export class IdentityListComponent implements OnInit {
   delete(identity: Identity): void {
     this._api.deleteIdentity(identity).subscribe(() => this.refresh());
   }
+
+  clear(identity: Identity): void {
+    this._api.clearIdentity(identity).subscribe(() => this.refresh());
+  }
 }

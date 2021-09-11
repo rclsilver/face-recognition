@@ -1,9 +1,10 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Camera } from '../models/camera.model';
 import { FaceEncoding } from '../models/face-encoding.model';
 import { Identity } from '../models/identity.model';
+import { QueryResult } from '../models/query-result.model';
 import { Query } from '../models/query.model';
 import { Recognition } from '../models/recognition.model';
 import { Suggestion } from '../models/suggestion.model';
@@ -34,6 +35,10 @@ export class ApiService {
 
   deleteIdentity(identity: Pick<Identity, 'id'>): Observable<void> {
     return this._http.delete<void>(`/api/identities/${identity.id}`);
+  }
+
+  clearIdentity(identity: Pick<Identity, 'id'>): Observable<void> {
+    return this._http.post<void>(`/api/identities/${identity.id}/clear`, {});
   }
 
   getUsers(): Observable<User[]> {
@@ -67,12 +72,12 @@ export class ApiService {
     return this._http.delete<void>(`/api/cameras/${camera.id}`);
   }
 
-  query(image: Blob): Observable<Recognition[] | null> {
+  query(image: Blob): Observable<QueryResult | null> {
     const payload = new FormData();
     payload.append('picture', image, 'webcam.jpg');
 
-    return this._http.post<Recognition[] | null>(
-      '/api/recognition/query',
+    return this._http.post<QueryResult | null>(
+      '/api/recognition/query?returns=1',
       payload
     );
   }

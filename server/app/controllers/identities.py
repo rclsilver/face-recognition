@@ -54,3 +54,15 @@ class IdentityController:
             shutil.rmtree(identity_dir)
 
         db.commit()
+
+    @classmethod
+    def clear_identity(cls, db: Session, id: UUID) -> None:
+        identity = cls.get_identity(db, id)
+        identity_dir = FACES_DIR / str(identity.id)
+
+        db.query(FaceEncoding).filter_by(identity=identity).delete()
+
+        if identity_dir.exists():
+            shutil.rmtree(identity_dir)
+
+        db.commit()
