@@ -85,19 +85,21 @@ export class ResultComponent implements OnDestroy {
 
           ctx.stroke();
 
-          ctx.fillText(
-            `${recognition.identity.first_name} ${recognition.identity.last_name.charAt(0).toUpperCase()}.`,
-            recognition.rect.start.x + (recognition.rect.end.x - recognition.rect.start.x) / 2,
-            recognition.rect.start.y - 10,
-            recognition.rect.end.x - recognition.rect.start.x
-          );
+          if (recognition.identity && recognition.score !== null) {
+            ctx.fillText(
+              `${recognition.identity.first_name} ${recognition.identity.last_name.charAt(0).toUpperCase()}.`,
+              recognition.rect.start.x + (recognition.rect.end.x - recognition.rect.start.x) / 2,
+              recognition.rect.start.y - 10,
+              recognition.rect.end.x - recognition.rect.start.x
+            );
 
-          ctx.fillText(
-            `${Math.round(recognition.score * 100).toString()} %`,
-            recognition.rect.start.x + (recognition.rect.end.x - recognition.rect.start.x) / 2,
-            recognition.rect.end.y + 24,
-            recognition.rect.end.x - recognition.rect.start.x
-          );
+            ctx.fillText(
+              `${Math.round(recognition.score * 100).toString()} %`,
+              recognition.rect.start.x + (recognition.rect.end.x - recognition.rect.start.x) / 2,
+              recognition.rect.end.y + 24,
+              recognition.rect.end.x - recognition.rect.start.x
+            );
+          }
         });
 
         // Display the canvas

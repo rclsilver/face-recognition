@@ -73,7 +73,7 @@ class RecognitionController:
         return result
 
     @classmethod
-    def query(cls, db: Session, image: Any, faces: List[tuple[int, int, int, int]]) -> List[Recognition]:
+    def query(cls, db: Session, image: Any, faces: List[tuple[int, int, int, int]], confidence_threshold: float = 0.6) -> List[Recognition]:
         """
         Create a new query in database
         """
@@ -95,26 +95,32 @@ class RecognitionController:
 
         for (top, right, bottom, left) in faces:
             recognition = cls.identify(db, image, (top, right, bottom, left))
+            result.append(recognition)
 
-            if recognition:
-                result.append(recognition)
+            # Record the query only if identity is not found or if score is below the confidence threshold
+            if recognition.score is None or recognition.score < confidence_threshold:
+                suggestion = Suggestion()
+                suggestion.query_id = query.id
+                suggestion.rect = [top, right, bottom, left]
 
-            suggestion = Suggestion()
-            suggestion.query_id = query.id
-            suggestion.rect = [top, right, bottom, left]
+                if recognition.identity:
+                    suggestion.identity_id = recognition.identity.id
+                    suggestion.score = recognition.score
 
-            if recognition:
-                suggestion.identity_id = recognition.identity.id
-                suggestion.score = recognition.score
+                db.add(suggestion)
+                db.flush()
 
-            db.add(suggestion)
-            db.flush()
+                # Write the suggestion file
+                if not cv2.imwrite(str(query_dir / f'{suggestion.id}.png'), image[top:bottom, left:right]):
+                    raise Exception('Unable to write suggestion image')
 
-            # Write the suggestion file
-            if not cv2.imwrite(str(query_dir / f'{suggestion.id}.png'), image[top:bottom, left:right]):
-                raise Exception('Unable to write suggestion image')
-
-        db.commit()
+        if query.suggestions:
+            # Commit the query and suggestions
+            db.commit()
+        else:
+            # Delete the query without suggestion
+            db.rollback()
+            shutil.rmtree(query_dir)
 
         return result
 
@@ -195,20 +201,17 @@ class RecognitionController:
             }
         ).fetchone()
 
-        if row:
-            return Recognition(**{
-                'identity': db.query(Identity).get(row[0]),
-                'score': 1 - row[1],
-                'rect': {
-                    'start': {
-                        'x': rect[3],
-                        'y': rect[0],
-                    },
-                    'end': {
-                        'x': rect[1],
-                        'y': rect[2],
-                    },
+        return Recognition(**{
+            'identity': db.query(Identity).get(row[0]) if row else None,
+            'score': 1 - row[1] if row else None,
+            'rect': {
+                'start': {
+                    'x': rect[3],
+                    'y': rect[0],
                 },
-            })
-
-        return None
+                'end': {
+                    'x': rect[1],
+                    'y': rect[2],
+                },
+            },
+        })

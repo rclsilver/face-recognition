@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { OAuthErrorEvent, OAuthService, UserInfo } from 'angular-oauth2-oidc';
-import { BehaviorSubject, combineLatest, ReplaySubject } from 'rxjs';
+import { BehaviorSubject, combineLatest } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 

@@ -49,29 +49,23 @@ class RecognitionHandler(FrameHandler):
         locations = face_recognition.face_locations(image)
         self._tracker.add('Fetch locations')
 
-        # Start recording if locations found
         if len(locations):
+            # Start recording if locations found
             if self._record:
                 if not self._stream.recording:
                     self._stream.start_record(self._record_timeout)
                 else:
                     self._stream.increase_record(self._record_increase_timeout)
 
-        # Fetch identities
-        for (top, right, bottom, left) in locations:
-            encodings = face_recognition.face_encodings(image, known_face_locations=[(top, right, bottom, left)])
+            # Fetch identities
+            prediction = RecognitionController.query(self._db, image, locations)
 
-            if len(encodings) == 1:
-                result = RecognitionController.identify(self._db, image, (top, right, bottom, left))
-
-                if result:
-                    self._logger.debug(
-                        'Found %s on the image (score: %0.02f %%)',
-                        f'{result.identity.first_name}',
-                        result.score,
-                    )
+            for result in prediction:
+                if result.identity:
+                    self._logger.debug('Found %s with score of %.02f %%', result.identity.first_name, result.score)
                 else:
-                    self._logger.debug('Found unknown face on the picture')
+                    self._logger.debug('Found unknown person')
+            self._tracker.add('Identify')
 
         self._tracker.show_inline(fn=self._logger.debug)
 
@@ -89,7 +83,11 @@ class StreamServer(BaseThread):
         self._clients = []
 
     def __del__(self):
-        # close the socket if required
+        if self._socket:
+            try:
+                self._socket.close()
+            except OSError:
+                pass
 
         if self._socket_file.exists():
             self._logger.debug('Deleting socket %s', self._socket_file)

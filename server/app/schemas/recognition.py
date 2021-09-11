@@ -40,8 +40,8 @@ class Recognition(BaseModel):
     """
     Identified face
     """
-    identity: Identity
-    score: float
+    identity: Optional[Identity]
+    score: Optional[float]
     rect: Rect
 
     class Config:
