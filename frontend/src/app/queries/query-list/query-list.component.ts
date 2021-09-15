@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 import { Identity } from 'src/app/models/identity.model';
 import { Query } from 'src/app/models/query.model';
 import { Suggestion } from 'src/app/models/suggestion.model';
@@ -14,6 +15,9 @@ export class QueryListComponent implements OnInit {
   private _queries$ = new BehaviorSubject<Query[]>([]);
   readonly queries$ = this._queries$.asObservable();
 
+  private _loading$ = new BehaviorSubject<boolean>(false);
+  public loading$ = this._loading$.asObservable();
+
   private _identities$ = new BehaviorSubject<Identity[]>([]);
   readonly identities$ = this._identities$.asObservable();
 
@@ -24,10 +28,16 @@ export class QueryListComponent implements OnInit {
   }
 
   refresh(): void {
-    this._api.getIdentities().subscribe((result) => {
-      this._identities$.next(result);
-      this._api.getQueries().subscribe((result) => this._queries$.next(result));
-    });
+    this._loading$.next(true);
+    this._api
+      .getIdentities()
+      .pipe(finalize(() => this._loading$.next(false)))
+      .subscribe((result) => {
+        this._identities$.next(result);
+        this._api
+          .getQueries()
+          .subscribe((result) => this._queries$.next(result));
+      });
   }
 
   compare(i1: Identity, i2: Identity): boolean {
@@ -50,5 +60,9 @@ export class QueryListComponent implements OnInit {
     this._api
       .deleteSuggestion(query, suggestion)
       .subscribe(() => this.refresh());
+  }
+
+  clearSuggestions(): void {
+    this._api.clearSuggestions().subscribe(() => this._queries$.next([]));
   }
 }

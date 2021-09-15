@@ -245,6 +245,14 @@ class RecognitionController:
         db.commit()
 
     @classmethod
+    def clear_suggestions(cls, db: Session) -> None:
+        """
+        Clear all existing suggestions
+        """
+        for suggestion in db.query(Suggestion).all():
+            cls.delete_suggestion(db, suggestion.query_id, suggestion.id)
+
+    @classmethod
     def compute_suggestions(cls, db: Session, confidence_threshold: float = 0.6):
         """
         Recompute all existing suggestions

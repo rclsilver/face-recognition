@@ -3,6 +3,9 @@
     <button type="button" class="btn btn-secondary" (click)="refresh()">
       Refresh
     </button>
+    <button type="button" class="btn btn-danger" (click)="clearSuggestions()">
+      Delete all
+    </button>
   </div>
   <table class="table queries">
     <thead>
@@ -14,6 +17,9 @@
       </tr>
     </thead>
     <tbody>
+      <tr *ngIf="loading$ | async">
+        <td class="text-center" colspan="4">Loading...</td>
+      </tr>
       <ng-container *ngFor="let query of queries$ | async">
         <tr *ngFor="let suggestion of query.suggestions">
           <th scope="col">

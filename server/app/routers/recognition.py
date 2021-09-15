@@ -3,7 +3,7 @@ from app.controllers.recognition import RecognitionController
 from app.database import get_session
 from app.models.users import User
 from app.schemas.recognition import FaceEncoding, Query, QueryConfirm, QuerySuggestion, QueryResult
-from fastapi import APIRouter, BackgroundTasks, Depends, File, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Response, UploadFile, status
 from sqlalchemy.orm import Session
 from uuid import UUID
 from typing import List
@@ -100,3 +100,16 @@ async def delete_suggestion(
     check_is_admin(user)
 
     return RecognitionController.delete_suggestion(db, query_id, suggestion_id)
+
+
+@router.delete('/queries/')
+async def delete_queries(
+    user: User = Depends(get_user),
+    db: Session = Depends(get_session)
+) -> None:
+    """
+    Delete all existing suggestions / queries
+    """
+    check_is_admin(user)
+
+    return RecognitionController.clear_suggestions(db)
