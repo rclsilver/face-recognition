@@ -38,5 +38,8 @@ class Suggestion(Base):
     identity_id = Column(UUID(as_uuid=True), ForeignKey('identity.id'), nullable=True)
     identity = relationship(Identity, backref=backref('suggestions', uselist=True))
 
+    vec_low = Column(ARRAY(Float), nullable=False)
+    vec_high = Column(ARRAY(Float), nullable=False)
+
     rect = Column(ARRAY(Integer), nullable=False)
     score = Column(Float, nullable=True)

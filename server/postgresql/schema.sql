@@ -48,5 +48,7 @@ CREATE TABLE IF NOT EXISTS suggestion (
     query_id UUID NOT NULL REFERENCES query,
     rect INTEGER ARRAY NOT NULL CHECK (ARRAY_LENGTH(rect, 1) = 4),
     identity_id UUID REFERENCES identity,
-    score DOUBLE PRECISION
+    score DOUBLE PRECISION,
+    vec_low DOUBLE PRECISION ARRAY NOT NULL,
+    vec_high DOUBLE PRECISION ARRAY NOT NULL
 );

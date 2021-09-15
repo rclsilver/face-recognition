@@ -44,21 +44,24 @@ class RecognitionController:
         return face_recognition.face_locations(image)
 
     @classmethod
-    def create_face_encoding(cls, db: Session, identity: Identity, image, rect: Tuple[int, int, int, int]) -> FaceEncoding:
+    def create_face_encoding(cls, db: Session, identity: Identity, image, rect: Tuple[int, int, int, int], encoding: Optional[List[float]] = None) -> FaceEncoding:
         """
         Store known face in database
         """
-        encodings = face_recognition.face_encodings(image, known_face_locations=[rect])
+        if encoding is None:
+            encodings = face_recognition.face_encodings(image, known_face_locations=[rect])
 
-        if not encodings:
-            raise Exception('No encoding found')
-        elif len(encodings) > 1:
-            raise Exception('More than one encoding found')
+            if not encodings:
+                raise Exception('No encoding found')
+            elif len(encodings) > 1:
+                raise Exception('More than one encoding found')
+
+            encoding = list(float(s) for s in encodings[0])
 
         result = FaceEncoding()
         result.identity_id = identity.id
-        result.vec_low =  list(float(s) for s in encodings[0][0:64])
-        result.vec_high = list(float(s) for s in encodings[0][64:128])
+        result.vec_low =  encoding[0:64]
+        result.vec_high = encoding[64:128]
 
         db.add(result)
         db.flush()
@@ -102,7 +105,7 @@ class RecognitionController:
         }
 
         for (top, right, bottom, left) in faces:
-            recognition = cls.identify(db, image, (top, right, bottom, left))
+            recognition, encoding = cls.identify(db, image, (top, right, bottom, left))
             result['recognitions'].append(recognition)
 
             # Record the query only if identity is not found or if score is below the confidence threshold
@@ -110,6 +113,8 @@ class RecognitionController:
                 suggestion = Suggestion()
                 suggestion.query_id = query.id
                 suggestion.rect = [top, right, bottom, left]
+                suggestion.vec_low = encoding[0:64]
+                suggestion.vec_high = encoding[0:64]
 
                 if recognition.identity:
                     suggestion.identity_id = recognition.identity.id
@@ -219,7 +224,7 @@ class RecognitionController:
 
         image = cv2.imread(str(suggestion_file))
         identity = identity if identity else suggestion.identity
-        encoding = cls.create_face_encoding(db, identity, image, (0, image.shape[1], image.shape[0], 0))
+        encoding = cls.create_face_encoding(db, identity, image, (0, image.shape[1], image.shape[0], 0), suggestion.vec_low + suggestion.vec_high)
 
         cls.delete_suggestion(db, query_id, suggestion_id)
 
@@ -265,7 +270,7 @@ class RecognitionController:
                 continue
 
             image = cv2.imread(str(image_file))
-            new_prediction = cls.identify(db, image, suggestion.rect)
+            new_prediction, _ = cls.identify(db, image, suggestion.rect)
 
             old_identity = suggestion.identity
             old_score = suggestion.score
@@ -290,7 +295,7 @@ class RecognitionController:
                 )
 
     @classmethod
-    def identify(cls, db: Session, image, rect: Tuple[int, int, int, int], threshold: float = 0.6) -> Recognition:
+    def identify(cls, db: Session, image, rect: Tuple[int, int, int, int], threshold: float = 0.6) -> Tuple[Recognition, List[float]]:
         """
         Identify face on a picture
         """
@@ -301,6 +306,8 @@ class RecognitionController:
         elif len(encodings) > 1:
             raise Exception('More than one encoding found')
 
+        encoding = list(float(s) for s in encodings[0])
+
         row = db.execute(
             """
             SELECT identity_id, MIN(SQRT(POWER(CUBE(ARRAY[:vec_low]) <-> CUBE(vec_low), 2) + POWER(CUBE(ARRAY[:vec_high]) <-> CUBE(vec_high), 2))) AS score
@@ -310,8 +317,8 @@ class RecognitionController:
             ORDER BY 2 ASC
             LIMIT 1
             """, {
-                'vec_low': list(float(s) for s in encodings[0][0:64]),
-                'vec_high': list(float(s) for s in encodings[0][64:128]),
+                'vec_low': encoding[0:64],
+                'vec_high': encoding[64:128],
                 'threshold': threshold,
             }
         ).fetchone()
@@ -329,4 +336,4 @@ class RecognitionController:
                     'y': rect[2],
                 },
             },
-        })
+        }), encoding

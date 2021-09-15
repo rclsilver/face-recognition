@@ -67,7 +67,7 @@ class VideoStream:
             encodings = face_recognition.face_encodings(image, known_face_locations=[(top, right, bottom, left)])
 
             if len(encodings) == 1:
-                result = RecognitionController.identify(self._db, image, (top, right, bottom, left))
+                result, _ = RecognitionController.identify(self._db, image, (top, right, bottom, left))
                 if result:
                     label = f'{result.identity.first_name}: {result.score}'
                 else:
