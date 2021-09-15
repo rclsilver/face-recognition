@@ -55,7 +55,7 @@ class FrameHandler(BaseThread):
 
     def add(self, frame):
         try:
-            self._queue.put_nowait(frame)
+            self._queue.put_nowait(frame.copy())
         except queue.Full:
             pass
 
