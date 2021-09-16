@@ -22,6 +22,10 @@ class IdentityController:
         return db.query(Identity).filter_by(id=id).one()
 
     @classmethod
+    def get_identity_faces(cls, db: Session, id: UUID) -> List[FaceEncoding]:
+        return db.query(FaceEncoding).filter_by(identity_id=id).all()
+
+    @classmethod
     def create_identity(cls, db: Session, payload: IdentityCreate) -> Identity:
         identity = Identity()
         identity.first_name = payload.first_name
@@ -52,6 +56,17 @@ class IdentityController:
 
         if identity_dir.exists():
             shutil.rmtree(identity_dir)
+
+        db.commit()
+
+    @classmethod
+    def delete_identity_face(cls, db: Session, identity_id: UUID, face_id: UUID) -> None:
+        identity = cls.get_identity(db, identity_id)
+        db.query(FaceEncoding).filter_by(identity_id=identity_id, id=face_id).delete()
+        face_path = FACES_DIR / str(identity.id) / f'{face_id}.png'
+
+        if face_path.exists():
+            face_path.unlink()
 
         db.commit()
 

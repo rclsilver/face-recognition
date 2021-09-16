@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { Identity } from 'src/app/models/identity.model';
 import { ApiService } from 'src/app/services/api.service';
@@ -18,7 +19,7 @@ export class IdentityListComponent implements OnInit {
 
   @ViewChild('form') form?: IdentityFormComponent;
 
-  constructor(private _api: ApiService) {}
+  constructor(private _api: ApiService, private _router: Router) {}
 
   ngOnInit(): void {
     this.refresh();
@@ -45,5 +46,9 @@ export class IdentityListComponent implements OnInit {
 
   clear(identity: Identity): void {
     this._api.clearIdentity(identity).subscribe(() => this.refresh());
+  }
+
+  displayFaces(identity: Identity): void {
+    this._router.navigate([`identities/${identity.id}`]);
   }
 }

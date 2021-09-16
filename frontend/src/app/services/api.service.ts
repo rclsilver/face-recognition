@@ -41,6 +41,25 @@ export class ApiService {
     return this._http.post<void>(`/api/identities/${identity.id}/clear`, {});
   }
 
+  getIdentity(identity: Pick<Identity, 'id'>): Observable<Identity> {
+    return this._http.get<Identity>(`/api/identities/${identity.id}`);
+  }
+
+  getIdentityFaces(identity: Pick<Identity, 'id'>): Observable<FaceEncoding[]> {
+    return this._http.get<FaceEncoding[]>(
+      `/api/identities/${identity.id}/faces`
+    );
+  }
+
+  deleteIdentityFace(
+    identity: Pick<Identity, 'id'>,
+    face: Pick<FaceEncoding, 'id'>
+  ): Observable<void> {
+    return this._http.delete<void>(
+      `/api/identities/${identity.id}/faces/${face.id}`
+    );
+  }
+
   getUsers(): Observable<User[]> {
     return this._http.get<User[]>('/api/users/');
   }

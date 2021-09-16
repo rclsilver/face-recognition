@@ -1,0 +1,44 @@
+<div *ngIf="identity$ | async as identity" class="container-fluid">
+  <h1>Faces of {{ identity.first_name }} {{ identity.last_name }}</h1>
+  <div class="table-header">
+    <button type="button" class="btn btn-secondary" (click)="refresh()">
+      Refresh
+    </button>
+    <button type="button" class="btn btn-danger" (click)="clear()">
+      Delete all
+    </button>
+  </div>
+  <table class="table queries">
+    <thead>
+      <tr>
+        <th scope="col">Picture</th>
+        <th scope="col">Created At</th>
+        <th scope="col">Updated At</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngIf="loading$ | async">
+        <td class="text-center" colspan="4">Loading...</td>
+      </tr>
+      <tr *ngFor="let face of faces$ | async">
+        <th scope="col">
+          <img
+            src="/assets/faces/{{ identity.id }}/{{ face.id }}.png"
+          />
+        </th>
+        <td>{{ face.created_at | date }}</td>
+        <td>{{ face.updated_at | date }}</td>
+        <td class="actions">
+          <button
+            type="button"
+            class="btn btn-sm btn-danger"
+            (click)="delete(face)"
+          >
+            Delete
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

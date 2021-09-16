@@ -20,6 +20,7 @@ import { UserListComponent } from './users/user-list/user-list.component';
 import { AuthModule } from './auth/auth.module';
 import { UserMenuComponent } from './page/user-menu/user-menu.component';
 import { QueryListComponent } from './queries/query-list/query-list.component';
+import { IdentityFacesComponent } from './identities/identity-faces/identity-faces.component';
 
 @NgModule({
   declarations: [
@@ -36,6 +37,7 @@ import { QueryListComponent } from './queries/query-list/query-list.component';
     UserListComponent,
     UserMenuComponent,
     QueryListComponent,
+    IdentityFacesComponent,
   ],
   imports: [
     BrowserModule,

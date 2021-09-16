@@ -77,6 +77,33 @@ async def delete_identity(
     return IdentityController.delete_identity(db, identity_id)
 
 
+@router.get('/{identity_id}/faces')
+async def get_identity_faces(
+    identity_id: UUID,
+    user: User = Depends(get_user),
+    db: Session = Depends(get_session)
+) -> List[FaceEncoding]:
+    """
+    Get identity faces
+    """
+    check_is_admin(user)
+    return IdentityController.get_identity_faces(db, identity_id)
+
+
+@router.delete('/{identity_id}/faces/{face_id}')
+async def get_identity_faces(
+    identity_id: UUID,
+    face_id: UUID,
+    user: User = Depends(get_user),
+    db: Session = Depends(get_session)
+) -> List[FaceEncoding]:
+    """
+    Delete identity face
+    """
+    check_is_admin(user)
+    return IdentityController.delete_identity_face(db, identity_id, face_id)
+
+
 @router.post('/{identity_id}/clear')
 async def clear_identity(
     identity_id: UUID,
