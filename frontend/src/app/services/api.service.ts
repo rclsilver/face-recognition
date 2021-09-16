@@ -148,14 +148,4 @@ export class ApiService {
   clearSuggestions(): Observable<void> {
     return this._http.delete<void>('/api/recognition/queries/');
   }
-
-  learn(identity: Pick<Identity, 'id'>, image: Blob): Observable<FaceEncoding> {
-    const payload = new FormData();
-    payload.append('picture', image, 'webcam.jpg');
-
-    return this._http.post<FaceEncoding>(
-      `/api/identities/${identity.id}/learn`,
-      payload
-    );
-  }
 }

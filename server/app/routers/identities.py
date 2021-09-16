@@ -1,11 +1,10 @@
 from app.auth import check_is_admin, get_user
 from app.controllers.identities import IdentityController
-from app.controllers.recognition import RecognitionController
 from app.database import get_session
 from app.schemas.identities import Identity, IdentityCreate, IdentityUpdate
 from app.schemas.recognition import FaceEncoding
 from app.schemas.users import User
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
@@ -115,27 +114,3 @@ async def clear_identity(
     """
     check_is_admin(user)
     return IdentityController.clear_identity(db, identity_id)
-
-
-@router.post('/{identity_id}/learn', response_model=FaceEncoding)
-async def learn(
-    identity_id: UUID,
-    picture: UploadFile = File(...),
-    user: User = Depends(get_user),
-    db: Session = Depends(get_session)
-) -> FaceEncoding:
-    """
-    Learn face on a picture
-    """
-    check_is_admin(user)
-
-    identity = IdentityController.get_identity(db, identity_id)
-    image = RecognitionController.load_uploaded_file(picture)
-    faces = RecognitionController.get_faces_locations(image)
-
-    if not faces:
-        raise HTTPException(status_code=400, detail='No face found')
-    elif len(faces) > 1:
-        raise HTTPException(status_code=400, detail='More than one face found')
-
-    return RecognitionController.create_face_encoding(db, identity, image, faces[0])

@@ -30,11 +30,6 @@ export class TopMenuComponent {
       allowed$: of(true),
     },
     {
-      label: 'Learn',
-      path: 'recognition/learn',
-      allowed$: this._auth.administrator$,
-    },
-    {
       label: 'Users',
       path: 'users',
       allowed$: this._auth.administrator$,

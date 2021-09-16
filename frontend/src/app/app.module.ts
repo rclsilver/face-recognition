@@ -8,7 +8,6 @@ import { WebcamModule } from 'ngx-webcam';
 import { HttpClientModule } from '@angular/common/http';
 import { TopMenuComponent } from './page/top-menu/top-menu.component';
 import { IdentityListComponent } from './identities/identity-list/identity-list.component';
-import { LearnComponent } from './recognition/learn/learn.component';
 import { QueryComponent } from './recognition/query/query.component';
 import { WebcamComponent } from './recognition/webcam/webcam.component';
 import { IdentityFormComponent } from './identities/identity-form/identity-form.component';
@@ -28,7 +27,6 @@ import { CameraRecordsComponent } from './cameras/camera-records/camera-records.
     AppComponent,
     TopMenuComponent,
     IdentityListComponent,
-    LearnComponent,
     QueryComponent,
     WebcamComponent,
     IdentityFormComponent,

@@ -7,7 +7,6 @@ import { CameraRecordsComponent } from './cameras/camera-records/camera-records.
 import { IdentityFacesComponent } from './identities/identity-faces/identity-faces.component';
 import { IdentityListComponent } from './identities/identity-list/identity-list.component';
 import { QueryListComponent } from './queries/query-list/query-list.component';
-import { LearnComponent } from './recognition/learn/learn.component';
 import { QueryComponent } from './recognition/query/query.component';
 import { UserListComponent } from './users/user-list/user-list.component';
 
@@ -50,11 +49,6 @@ const routes: Routes = [
   {
     path: 'recognition',
     children: [
-      {
-        path: 'learn',
-        component: LearnComponent,
-        canActivate: [RequireAdminGuard],
-      },
       {
         path: 'query',
         component: QueryComponent,
