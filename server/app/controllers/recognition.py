@@ -114,7 +114,7 @@ class RecognitionController:
                 suggestion.query_id = query.id
                 suggestion.rect = [top, right, bottom, left]
                 suggestion.vec_low = encoding[0:64]
-                suggestion.vec_high = encoding[0:64]
+                suggestion.vec_high = encoding[64:128]
 
                 if recognition.identity:
                     suggestion.identity_id = recognition.identity.id
