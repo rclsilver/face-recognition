@@ -11,6 +11,8 @@
     <thead>
       <tr>
         <th scope="col">Picture</th>
+        <th scope="col">Created at</th>
+        <th scope="col">Updated at</th>
         <th scope="col">Identity</th>
         <th scope="col">Score</th>
         <th scope="col"></th>
@@ -25,6 +27,8 @@
           <th scope="col">
             <img src="/assets/queries/{{ query.id }}/{{ suggestion.id }}.png" />
           </th>
+          <td>{{ suggestion.created_at | date:'medium' }}</td>
+          <td>{{ suggestion.updated_at | date:'medium' }}</td>
           <td>
             <select [(ngModel)]="suggestion.identity" [compareWith]="compare">
               <option [value]="null" disabled="disabled">
