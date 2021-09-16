@@ -3,6 +3,7 @@ import { ExtraOptions, RouterModule, Routes } from '@angular/router';
 import { RequireAdminGuard } from './auth/guards/require-admin.guard';
 import { RequireUserGuard } from './auth/guards/require-user.guard';
 import { CameraListComponent } from './cameras/camera-list/camera-list.component';
+import { CameraRecordsComponent } from './cameras/camera-records/camera-records.component';
 import { IdentityFacesComponent } from './identities/identity-faces/identity-faces.component';
 import { IdentityListComponent } from './identities/identity-list/identity-list.component';
 import { QueryListComponent } from './queries/query-list/query-list.component';
@@ -67,6 +68,11 @@ const routes: Routes = [
         path: '',
         component: CameraListComponent,
         canActivate: [RequireUserGuard],
+      },
+      {
+        path: ':id',
+        component: CameraRecordsComponent,
+        canActivate: [RequireAdminGuard],
       },
     ],
   },

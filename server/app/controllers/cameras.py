@@ -1,8 +1,10 @@
 import logging
 
 from app.cameras.clients import SocketClient
+from app.constants import RECORDS_DIR
 from app.models.cameras import Camera
-from app.schemas.cameras import CameraCreate, CameraUpdate
+from app.schemas.cameras import CameraCreate, CameraRecord, CameraUpdate
+from datetime import datetime
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
@@ -19,6 +21,42 @@ class CameraController:
     @classmethod
     def get_camera(cls, db: Session, id: UUID) -> Camera:
         return db.query(Camera).filter_by(id=id).one()
+
+    @classmethod
+    def get_camera_records(cls, db: Session, id: UUID) -> List[CameraRecord]:
+        camera = cls.get_camera(db, id)
+        camera_dir = RECORDS_DIR / str(camera.id)
+        records = []
+
+        if camera_dir.exists():
+            for record_file in camera_dir.glob('*.mp4'):
+                stat = record_file.stat()
+                record = CameraRecord(**{
+                    'filename': record_file.name,
+                    'created_at': str(datetime.fromtimestamp(stat.st_ctime)),
+                    'updated_at': str(datetime.fromtimestamp(stat.st_mtime)),
+                })
+                records.append(record)
+
+        return records
+
+    @classmethod
+    def delete_camera_records(cls, db: Session, camera_id: UUID) -> None:
+        camera = cls.get_camera(db, camera_id)
+        camera_dir = RECORDS_DIR / str(camera.id)
+
+        if camera_dir.exists():
+            for record_file in camera_dir.glob('*.mp4'):
+                record_file.unlink()
+
+    @classmethod
+    def delete_camera_record(cls, db: Session, camera_id: UUID, record_name: str) -> None:
+        camera = cls.get_camera(db, camera_id)
+        camera_dir = RECORDS_DIR / str(camera.id)
+        record_file = camera_dir / record_name
+        
+        if record_file.exists():
+            record_file.unlink()
 
     @classmethod
     def create_camera(cls, db: Session, payload: CameraCreate) -> Camera:

@@ -31,3 +31,12 @@ class Camera(Base):
 
     class Config:
         orm_mode = True
+
+
+class CameraRecord(BaseModel):
+    """
+    Camera record
+    """
+    created_at: str
+    updated_at: str
+    filename: str

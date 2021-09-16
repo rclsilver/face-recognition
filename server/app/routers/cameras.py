@@ -1,7 +1,7 @@
 from app.auth import BaseAuth, check_is_admin, get_auth, get_user
 from app.controllers.cameras import CameraController
 from app.database import get_session
-from app.schemas.cameras import Camera, CameraCreate, CameraUpdate
+from app.schemas.cameras import Camera, CameraCreate, CameraRecord, CameraUpdate
 from app.schemas.users import User
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from fastapi.responses import StreamingResponse
@@ -48,6 +48,46 @@ async def get_camera(
     """
     check_is_admin(user)
     return CameraController.get_camera(db, camera_id)
+
+
+@router.get('/{camera_id}/records', response_model=List[CameraRecord])
+async def get_camera_records(
+    camera_id: UUID,
+    user: User = Depends(get_user),
+    db: Session = Depends(get_session)
+) -> Camera:
+    """
+    Get camera records
+    """
+    check_is_admin(user)
+    return CameraController.get_camera_records(db, camera_id)
+
+
+@router.delete('/{camera_id}/records')
+async def delete_camera_records(
+    camera_id: UUID,
+    user: User = Depends(get_user),
+    db: Session = Depends(get_session)
+) -> Camera:
+    """
+    Delete camera records
+    """
+    check_is_admin(user)
+    return CameraController.delete_camera_records(db, camera_id)
+
+
+@router.delete('/{camera_id}/records/{record_name}')
+async def delete_camera_records(
+    camera_id: UUID,
+    record_name: str,
+    user: User = Depends(get_user),
+    db: Session = Depends(get_session)
+) -> Camera:
+    """
+    Delete camera record
+    """
+    check_is_admin(user)
+    return CameraController.delete_camera_record(db, camera_id, record_name)
 
 
 @router.put('/{camera_id}', response_model=Camera)

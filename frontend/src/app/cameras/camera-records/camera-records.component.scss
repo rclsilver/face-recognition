@@ -1,0 +1,57 @@
+.suggestion {
+  display: flex;
+  flex-direction: row;
+
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+
+  img {
+    width: 64px;
+  }
+
+  .display {
+    margin-left: 0.5rem;
+
+    .score {
+      &::before {
+        content: " - ";
+      }
+
+      &::after {
+        content: "%";
+      }
+    }
+  }
+
+  .buttons button {
+    margin-left: 0.5rem;
+  }
+}
+
+.table-header {
+  text-align: right;
+
+  button {
+    margin-left: 0.1em;
+    margin-right: 0.1em;
+  }
+}
+
+.records {
+  * {
+    vertical-align: middle;
+  }
+
+  * img {
+    width: 64px;
+  }
+
+  * .actions {
+    text-align: right;
+
+    button {
+      margin-left: 0.1em;
+      margin-right: 0.1em;
+    }
+  }
+}

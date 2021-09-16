@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { Camera } from 'src/app/models/camera.model';
 import { ApiService } from 'src/app/services/api.service';
@@ -20,7 +21,7 @@ export class CameraListComponent implements OnInit {
   @ViewChild('form') form?: CameraFormComponent;
   @ViewChild('live') live?: CameraLiveComponent;
 
-  constructor(private _api: ApiService) {}
+  constructor(private _api: ApiService, private _router: Router) {}
 
   ngOnInit(): void {
     this.refresh();
@@ -45,5 +46,9 @@ export class CameraListComponent implements OnInit {
 
   startLive(camera: Camera): void {
     this.live!.camera = camera;
+  }
+
+  displayRecords(camera: Camera): void {
+    this._router.navigate([`cameras/${camera.id}`]);
   }
 }

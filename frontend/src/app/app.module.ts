@@ -21,6 +21,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserMenuComponent } from './page/user-menu/user-menu.component';
 import { QueryListComponent } from './queries/query-list/query-list.component';
 import { IdentityFacesComponent } from './identities/identity-faces/identity-faces.component';
+import { CameraRecordsComponent } from './cameras/camera-records/camera-records.component';
 
 @NgModule({
   declarations: [
@@ -38,6 +39,7 @@ import { IdentityFacesComponent } from './identities/identity-faces/identity-fac
     UserMenuComponent,
     QueryListComponent,
     IdentityFacesComponent,
+    CameraRecordsComponent,
   ],
   imports: [
     BrowserModule,

@@ -75,6 +75,9 @@ class VideoStream(BaseThread):
         self._record = None
         self._record_timeout = 0
         self._record_size = None
+        self._fps_timestamp = 0
+        self._fps_count = 0
+        self._fps_avg = 0
 
     def add_handler(self, handler: FrameHandler, max_fps: int = 0) -> FrameHandler:
         self._handlers.append({
@@ -102,6 +105,10 @@ class VideoStream(BaseThread):
     @property
     def camera_name(self) -> str:
         raise NotImplementedError()
+
+    @property
+    def avg_fps(self) -> int:
+        return self._fps_avg
 
     def recorded_frame(self, frame):
         frame = frame.copy()
@@ -131,6 +138,15 @@ class VideoStream(BaseThread):
             try:
                 frame = self.next()
                 self._tracker.add('Read frame')
+
+                # Compute avg fps
+                now = self._tracker.now()
+                self._fps_count += 1
+
+                if not self._fps_timestamp or (now - self._fps_timestamp) >= 1000:
+                    self._fps_avg = self._fps_count
+                    self._fps_timestamp = now
+                    self._fps_count = 0
 
                 if self._record:
                     if self._record_timeout <= datetime.now().timestamp():
@@ -170,17 +186,20 @@ class VideoStream(BaseThread):
     def start_record(self, timeout: int = 30):
         self._logger.info('Starting record')
 
-        file = RECORDS_DIR / self.camera_id / '{}.avi'.format(
+        file = RECORDS_DIR / self.camera_id / '{}.mp4'.format(
             datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
         )
 
         if not file.parent.exists():
             file.parent.mkdir(parents=True)
 
+        # Compute FPS by speedup the video with a ratio of 2
+        fps = self.avg_fps * 2 if self.avg_fps else 30
+
         self._record = cv2.VideoWriter(
             str(file),
-            cv2.VideoWriter_fourcc(*'DIVX'),
-            60,
+            cv2.VideoWriter_fourcc(*'MP4V'),
+            fps,
             self._record_size
         )
         self.increase_record(timeout)

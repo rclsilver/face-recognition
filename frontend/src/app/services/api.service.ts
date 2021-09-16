@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { CameraRecord } from '../models/camera-record.model';
 import { Camera } from '../models/camera.model';
 import { FaceEncoding } from '../models/face-encoding.model';
 import { Identity } from '../models/identity.model';
@@ -74,6 +75,27 @@ export class ApiService {
 
   getCameras(): Observable<Camera[]> {
     return this._http.get<Camera[]>('/api/cameras/');
+  }
+
+  getCamera(camera: Pick<Camera, 'id'>): Observable<Camera> {
+    return this._http.get<Camera>(`/api/cameras/${camera.id}`);
+  }
+
+  getCameraRecords(camera: Pick<Camera, 'id'>): Observable<CameraRecord[]> {
+    return this._http.get<CameraRecord[]>(`/api/cameras/${camera.id}/records`);
+  }
+
+  deleteCameraRecord(
+    camera: Pick<Camera, 'id'>,
+    recordName: string
+  ): Observable<void> {
+    return this._http.delete<void>(
+      `/api/cameras/${camera.id}/records/${recordName}`
+    );
+  }
+
+  deleteCameraRecords(camera: Pick<Camera, 'id'>): Observable<void> {
+    return this._http.delete<void>(`/api/cameras/${camera.id}/records/`);
   }
 
   createCamera(payload: Pick<Camera, 'label' | 'url'>): Observable<Camera> {

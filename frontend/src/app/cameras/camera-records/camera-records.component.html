@@ -1,0 +1,48 @@
+<div *ngIf="camera$ | async as camera" class="container-fluid">
+  <h1>Records of {{ camera.label }}</h1>
+  <div class="table-header">
+    <button type="button" class="btn btn-secondary" (click)="refresh()">
+      Refresh
+    </button>
+    <button type="button" class="btn btn-danger" (click)="clear()">
+      Delete all
+    </button>
+  </div>
+  <table class="table records">
+    <thead>
+      <tr>
+        <th scope="col">Record</th>
+        <th scope="col">Created At</th>
+        <th scope="col">Updated At</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngIf="loading$ | async">
+        <td class="text-center" colspan="4">Loading...</td>
+      </tr>
+      <tr *ngFor="let record of records$ | async">
+        <th scope="col">
+          <video controls width="250">
+            <source
+              src="/assets/records/{{ camera.id }}/{{ record.filename }}"
+              type="video/mp4"
+            />
+            Sorry, your browser doesn't support embedded videos.
+          </video>
+        </th>
+        <td>{{ record.created_at | date:'medium' }}</td>
+        <td>{{ record.updated_at | date:'medium' }}</td>
+        <td class="actions">
+          <button
+            type="button"
+            class="btn btn-sm btn-danger"
+            (click)="delete(record)"
+          >
+            Delete
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
