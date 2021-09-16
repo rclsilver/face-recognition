@@ -4,4 +4,6 @@ export declare class Camera {
   updated_at: string;
   label: string;
   url: string;
+  username: string | null;
+  password: string | null;
 }

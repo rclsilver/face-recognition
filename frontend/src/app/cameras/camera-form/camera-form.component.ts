@@ -17,17 +17,23 @@ export class CameraFormComponent {
     if (value) {
       this.record.label = value.label;
       this.record.url = value.url;
+      this.record.username = value.username;
+      this.record.password = value.password;
     } else {
       this.record.label = '';
       this.record.url = '';
+      this.record.username = null;
+      this.record.password = null;
     }
   }
 
   @Output() submit = new EventEmitter<Camera>();
 
-  record: Pick<Camera, 'label' | 'url'> = {
+  record: Pick<Camera, 'label' | 'url' | 'username' | 'password'> = {
     label: '',
     url: '',
+    username: null,
+    password: null,
   };
 
   constructor(private _api: ApiService) {}

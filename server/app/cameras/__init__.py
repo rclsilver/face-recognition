@@ -20,6 +20,7 @@ class BaseThread(threading.Thread):
             self.__class__.__name__,
             self.name
         ))
+        self._tracker = TimeTracker()
 
     def start(self) -> None:
         self._logger.debug('Starting the thread')
@@ -36,8 +37,13 @@ class FrameHandler(BaseThread):
         super().__init__(name=stream.camera_id)
 
         self._queue = queue.Queue(max_queue_size)
-        self._tracker = TimeTracker()
         self._stream = stream
+
+    def __str__(self) -> str:
+        return '{}({})'.format(
+            self.__class__.__name__,
+            self.name
+        )
 
     def process(self, frame: any):
         pass
@@ -120,8 +126,11 @@ class VideoStream(BaseThread):
 
     def run(self):
         while self._running:
+            self._tracker.reset()
+
             try:
                 frame = self.next()
+                self._tracker.add('Read frame')
 
                 if self._record:
                     if self._record_timeout <= datetime.now().timestamp():
@@ -135,6 +144,7 @@ class VideoStream(BaseThread):
                         self._record.write(
                             self.recorded_frame(frame)
                         )
+                        self._tracker.add('Record')
 
                     now = time.time_ns() / 1e6
 
@@ -142,6 +152,9 @@ class VideoStream(BaseThread):
                         if now - handler['last'] >= handler['delay']:
                             handler['last'] = now
                             handler['handler'].add(frame)
+                        self._tracker.add('Handler {}'.format(handler['handler']))
+                
+                self._tracker.show_inline(fn=self._logger.debug)
             except Exception:
                 self._logger.exception('Uncaught exception')
 

@@ -25,6 +25,8 @@ class CameraController:
         camera = Camera()
         camera.label = payload.label
         camera.url = payload.url
+        camera.username = payload.username
+        camera.password = payload.password
         
         db.add(camera)
         db.commit()
@@ -36,6 +38,8 @@ class CameraController:
         camera = cls.get_camera(db, id)
         camera.label = payload.label
         camera.url = payload.url
+        camera.username = payload.username
+        camera.password = payload.password
 
         db.commit()
 

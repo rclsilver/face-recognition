@@ -22,7 +22,7 @@ class NetworkStream(VideoStream):
     def next(self):
         if not self._cap:
             self._logger.debug('Opening capture from URL %s', self._camera.url)
-            self._cap = cv2.VideoCapture(self._camera.url)
+            self._cap = cv2.VideoCapture(self._camera.full_url)
 
         if not self._cap.isOpened():
             self._logger.error(

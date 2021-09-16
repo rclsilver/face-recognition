@@ -1,5 +1,6 @@
 from app.schemas import Base
 from pydantic import BaseModel
+from typing import Optional
 
 
 class CameraCreate(BaseModel):
@@ -8,6 +9,8 @@ class CameraCreate(BaseModel):
     """
     label: str
     url: str
+    username: str
+    password: str
 
 
 class CameraUpdate(CameraCreate):
@@ -23,6 +26,8 @@ class Camera(Base):
     """
     label: str
     url: str
+    username: Optional[str]
+    password: Optional[str]
 
     class Config:
         orm_mode = True
