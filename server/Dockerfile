@@ -31,13 +31,14 @@ RUN set -eux \
     && apt-get -qq clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy application
-COPY . /usr/src/
-
 # Install application dependencies
+COPY requirements/ /usr/src/requirements/
 RUN set -eux \
     && pip install -r /usr/src/requirements/${PIP_ENV}.txt \
     && rm -rf /root/.cache/pip
+
+# Copy application
+COPY . /usr/src/
 
 # Expose application port
 EXPOSE 8000
