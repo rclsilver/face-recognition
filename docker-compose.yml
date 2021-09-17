@@ -13,6 +13,11 @@ services:
       POSTGRES_USER:     faces
       POSTGRES_PASSWORD: faces
 
+  mosquitto:
+    image: eclipse-mosquitto:2.0.12
+    volumes:
+      - ${PWD}/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+
   server:
     image: face-recognition
     build:
@@ -21,6 +26,7 @@ services:
         PIP_ENV: development
     depends_on:
       - postgresql
+      - mosquitto
     environment:
       # Development
       APP_ENV: 'development'
@@ -32,6 +38,13 @@ services:
       DB_USER: faces
       DB_PASS: faces
       DB_NAME: faces
+
+      # MQTT
+      MQTT_HOST: mosquitto
+      MQTT_PORT: 1883
+      MQTT_USER: ''
+      MQTT_PASS: ''
+      MQTT_PREFIX: 'face-recognition'
     volumes:
       - ${PWD}/server:/usr/src
       - ${PWD}/server/data:/data

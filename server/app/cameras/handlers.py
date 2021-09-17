@@ -10,6 +10,8 @@ from app.controllers.recognition import RecognitionController
 from app.constants import SOCKET_DIR
 from app.database import SessionLocal
 from app.models.cameras import Camera
+from app.mqtt import client as mqtt
+from app.schemas.recognition import Recognition
 from datetime import datetime
 from pathlib import Path
 from typing import Union
@@ -34,6 +36,20 @@ class RecognitionHandler(FrameHandler):
 
     def __del__(self):
         self._db.close()
+
+    def _publish_mqtt(self, recognition: Recognition):
+        return mqtt.publish('detection', {
+            'camera': {
+                'id': self._stream.camera_id,
+                'name': self._stream.camera_name,
+            },
+            'identity': {
+                'id': str(recognition.identity.id),
+                'first_name': recognition.identity.first_name,
+                'last_name': recognition.identity.last_name,
+            } if recognition.identity else None,
+            'score': recognition.score,
+        })
 
     def process(self, frame: any):
         # Resize the frame if required
@@ -62,9 +78,10 @@ class RecognitionHandler(FrameHandler):
 
             for recognition in result.recognitions:
                 if recognition.identity:
-                    self._logger.debug('Found %s with score of %.02f %%', recognition.identity.first_name, recognition.score)
+                    self._logger.info('Found %s with score of %.02f %%', recognition.identity.first_name, recognition.score * 100)
                 else:
-                    self._logger.debug('Found unknown person')
+                    self._logger.info('Found unknown person')
+                self._publish_mqtt(recognition)
             self._tracker.add('Identify')
 
         self._tracker.show_inline(fn=self._logger.debug)

@@ -5,6 +5,7 @@ from app.cameras.streams import NetworkStream
 from app.commands import cli
 from app.controllers.cameras import CameraController
 from app.database import SessionLocal
+from app.mqtt import client as mqtt
 
 
 @cli.group()
@@ -27,6 +28,7 @@ def run():
     db.close()
 
     # Start threads
+    mqtt.start()
     streams = tuple(NetworkStream(camera) for camera in cameras)
 
     for stream in streams:
@@ -37,3 +39,6 @@ def run():
     # Wait end of the threads
     for stream in streams:
         stream.join()
+
+    mqtt.stop()
+    mqtt.join()

@@ -5,6 +5,8 @@ import time
 import threading
 
 from app.constants import RECORDS_DIR
+from app.models.cameras import Camera
+from app.mqtt import client as mqtt
 from app.utils.time import TimeTracker
 from datetime import datetime
 from typing import Any, Tuple
@@ -69,12 +71,13 @@ class FrameHandler(BaseThread):
 class VideoStream(BaseThread):
     RECORD_EXTENSION = 'webm'
 
-    def __init__(self, name: str):
-        super().__init__(name=name)
-
+    def __init__(self, camera: Camera):
+        super().__init__(name=str(camera.id))
+        self._camera = camera
         self._handlers = []
         self._last_frame = 0
         self._record = None
+        self._record_file = None
         self._record_timeout = 0
         self._record_size = None
         self._record_codec = 'VP80'
@@ -103,12 +106,16 @@ class VideoStream(BaseThread):
         raise NotImplementedError()
 
     @property
+    def camera(self) -> Camera:
+        return self._camera
+
+    @property
     def camera_id(self) -> str:
-        raise NotImplementedError()
+        return str(self._camera.id)
 
     @property
     def camera_name(self) -> str:
-        raise NotImplementedError()
+        return self._camera.label
 
     @property
     def avg_fps(self) -> int:
@@ -190,24 +197,32 @@ class VideoStream(BaseThread):
     def start_record(self, timeout: int = 30):
         self._logger.info('Starting record')
 
-        file = RECORDS_DIR / self.camera_id / '{}.{}'.format(
+        self._record_file = RECORDS_DIR / self.camera_id / '{}.{}'.format(
             datetime.now().strftime('%Y-%m-%d_%H:%M:%S'),
             self._record_extension
         )
 
-        if not file.parent.exists():
-            file.parent.mkdir(parents=True)
+        if not self._record_file.parent.exists():
+            self._record_file.parent.mkdir(parents=True)
 
         # Compute FPS by speedup the video with a ratio of 2
         fps = self.avg_fps * 2 if self.avg_fps else 30
 
         self._record = cv2.VideoWriter(
-            str(file),
+            str(self._record_file),
             cv2.VideoWriter_fourcc(*self._record_codec),
             fps,
             self._record_size
         )
         self.increase_record(timeout)
+
+        mqtt.publish('record-start', {
+            'camera': {
+                'id': self.camera_id,
+                'name': self.camera_name,
+            },
+            'name': str(self._record_file.name)
+        })
 
     def increase_record(self, timeout: int = 30):
         self._logger.debug('Increase record timeout: %d', timeout)
@@ -219,8 +234,16 @@ class VideoStream(BaseThread):
     def stop_record(self):
         self._logger.info('Stopping record')
         self._record.release()
+        mqtt.publish('record-stop', {
+            'camera': {
+                'id': self.camera_id,
+                'name': self.camera_name,
+            },
+            'name': str(self._record_file.name)
+        })
         self._record = None
         self._record_timeout = 0
+        self._record_file = None
 
     @property
     def recording(self):
