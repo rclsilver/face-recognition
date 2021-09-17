@@ -95,7 +95,7 @@ export class ApiService {
   }
 
   deleteCameraRecords(camera: Pick<Camera, 'id'>): Observable<void> {
-    return this._http.delete<void>(`/api/cameras/${camera.id}/records/`);
+    return this._http.delete<void>(`/api/cameras/${camera.id}/records`);
   }
 
   createCamera(payload: Pick<Camera, 'label' | 'url'>): Observable<Camera> {
