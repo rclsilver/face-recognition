@@ -32,14 +32,21 @@ class CameraController:
         if camera_dir.exists():
             for record_file in camera_dir.glob(f'*.{VideoStream.RECORD_EXTENSION}'):
                 stat = record_file.stat()
-                record = CameraRecord(**{
+                record = {
                     'filename': record_file.name,
                     'created_at': str(datetime.fromtimestamp(stat.st_ctime)),
                     'updated_at': str(datetime.fromtimestamp(stat.st_mtime)),
-                })
+                    'timestamp': stat.st_ctime,
+                }
                 records.append(record)
 
-        return records
+        return list(
+            CameraRecord(**{
+                'filename': record['filename'],
+                'created_at': record['created_at'],
+                'updated_at': record['updated_at'],
+            }) for record in sorted(records, reverse=True, key=lambda record: record['timestamp'])
+        )
 
     @classmethod
     def delete_camera_records(cls, db: Session, camera_id: UUID) -> None:
