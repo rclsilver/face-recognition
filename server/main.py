@@ -4,8 +4,11 @@ import os
 from app import get_app, get_cli
 
 
+DEBUG = os.getenv('APP_DEBUG', 'false').lower() == 'true'
+
+
 logging.basicConfig(
-    level=logging.DEBUG
+    level=logging.DEBUG if DEBUG else logging.INFO
 )
 
 if __name__ == '__main__':
@@ -18,5 +21,5 @@ else:
         os.getenv('OIDC_ISSUER'),
         os.getenv('APP_PREFIX', ''),
         os.getenv('APP_ENV', 'production').lower() == 'production',
-        os.getenv('APP_DEBUG', 'false').lower() == 'true'
+        DEBUG
     )
