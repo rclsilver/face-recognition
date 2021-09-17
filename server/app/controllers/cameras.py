@@ -1,5 +1,6 @@
 import logging
 
+from app.cameras import VideoStream
 from app.cameras.clients import SocketClient
 from app.constants import RECORDS_DIR
 from app.models.cameras import Camera
@@ -29,7 +30,7 @@ class CameraController:
         records = []
 
         if camera_dir.exists():
-            for record_file in camera_dir.glob('*.mp4'):
+            for record_file in camera_dir.glob(f'*.{VideoStream.RECORD_EXTENSION}'):
                 stat = record_file.stat()
                 record = CameraRecord(**{
                     'filename': record_file.name,
@@ -46,7 +47,7 @@ class CameraController:
         camera_dir = RECORDS_DIR / str(camera.id)
 
         if camera_dir.exists():
-            for record_file in camera_dir.glob('*.mp4'):
+            for record_file in camera_dir.glob(f'*.{VideoStream.RECORD_EXTENSION}'):
                 record_file.unlink()
 
     @classmethod

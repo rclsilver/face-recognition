@@ -67,6 +67,8 @@ class FrameHandler(BaseThread):
 
 
 class VideoStream(BaseThread):
+    RECORD_EXTENSION = 'webm'
+
     def __init__(self, name: str):
         super().__init__(name=name)
 
@@ -75,6 +77,8 @@ class VideoStream(BaseThread):
         self._record = None
         self._record_timeout = 0
         self._record_size = None
+        self._record_codec = 'VP80'
+        self._record_extension = self.RECORD_EXTENSION
         self._fps_timestamp = 0
         self._fps_count = 0
         self._fps_avg = 0
@@ -186,8 +190,9 @@ class VideoStream(BaseThread):
     def start_record(self, timeout: int = 30):
         self._logger.info('Starting record')
 
-        file = RECORDS_DIR / self.camera_id / '{}.mp4'.format(
-            datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        file = RECORDS_DIR / self.camera_id / '{}.{}'.format(
+            datetime.now().strftime('%Y-%m-%d_%H:%M:%S'),
+            self._record_extension
         )
 
         if not file.parent.exists():
@@ -198,7 +203,7 @@ class VideoStream(BaseThread):
 
         self._record = cv2.VideoWriter(
             str(file),
-            cv2.VideoWriter_fourcc(*'MP4V'),
+            cv2.VideoWriter_fourcc(*self._record_codec),
             fps,
             self._record_size
         )
