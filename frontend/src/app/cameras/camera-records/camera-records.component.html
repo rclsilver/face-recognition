@@ -23,7 +23,7 @@
       </tr>
       <tr *ngFor="let record of records$ | async">
         <th scope="col">
-          <video controls width="250">
+          <video controls width="250" preload="metadata">
             <source
               src="/assets/records/{{ camera.id }}/{{ record.filename }}"
               type="video/webm"
