@@ -11,18 +11,18 @@ from cryptography.hazmat.backends import default_backend
 from fastapi import HTTPException, Request, status
 from fastapi.security.utils import get_authorization_scheme_param
 from sqlalchemy.orm import Session
-from typing import Dict
+from typing import Dict, List, Optional
 
 
 class OidcAuth(BaseAuth):
     """
     OpenID Connect auth
     """
-    def __init__(self, issuer_url: str):
+    def __init__(self, issuer_url: str, source_whitelist: List[str]):
         """
         Initialize OIDC auth with the issuer URL
         """
-        super().__init__()
+        super().__init__(source_whitelist)
 
         self._issuer_url = issuer_url
         self._configuration = self._load_configuration()
@@ -114,10 +114,14 @@ class OidcAuth(BaseAuth):
             '/administrateurs' in token_payload.get('groups', [])
         )
 
-    def get_user(self, request: Request, db: Session) -> User:
+    def get_user(self, request: Request, db: Session) -> Optional[User]:
         """
         Get or create user from authorization header
         """
+        if self.is_whitelist(request.client.host):
+            self._logger.debug('Client %s is in the whitelist', request.client.host)
+            return UserController.get_or_create_user(db, 'internal', True)
+
         scheme, token = get_authorization_scheme_param(request.headers.get('authorization'))
 
         if scheme.lower() != 'bearer':

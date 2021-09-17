@@ -1,3 +1,6 @@
+from typing import List
+
+
 def get_version():
     """
     Build current version
@@ -8,7 +11,8 @@ def get_app(
     oidc_issuer: str,
     app_prefix: str = '',
     production: bool = True,
-    debug: bool = True
+    debug: bool = True,
+    source_whitelist: List[str] = []
 ):
     from app.auth import configure_auth
     from app.auth.oidc import OidcAuth
@@ -16,7 +20,7 @@ def get_app(
     from fastapi import FastAPI
 
     # Configure authentication
-    configure_auth(OidcAuth, oidc_issuer)
+    configure_auth(OidcAuth, oidc_issuer, source_whitelist)
 
     # Initialize the application
     app = FastAPI(
@@ -25,6 +29,7 @@ def get_app(
         debug=debug,
         production=production,
         root_path=app_prefix,
+        source_whitelist=source_whitelist
     )
 
     # Create the routes

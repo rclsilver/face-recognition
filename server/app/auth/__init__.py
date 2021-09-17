@@ -3,7 +3,9 @@ import logging
 from app.database import get_session
 from app.schemas.users import User
 from fastapi import Depends, HTTPException, Request, status
+from ipaddress import IPv4Address, IPv4Network
 from sqlalchemy.orm import Session
+from typing import List
 
 
 _auth_instance = None
@@ -28,11 +30,23 @@ class BaseAuth:
     Base auth class
     """
     
-    def __init__(self):
+    def __init__(self, source_whitelist: List[str]):
         """
         Initialize the class
         """
         self._logger = logging.getLogger(f'{self.__class__.__module__}.{self.__class__.__name__}')
+        self._source_whitelist = source_whitelist
+
+    def is_whitelist(self, client_ip: str) -> bool:
+        """
+        Is the client IP in the whitelist
+        """
+        ip = IPv4Address(client_ip)
+
+        for network in (IPv4Network(net) for net in self._source_whitelist):
+            if ip in network:
+                return True
+        return False
 
     def get_user_with_token(self, token: str, db: Session) -> User:
         """

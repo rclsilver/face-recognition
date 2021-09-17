@@ -21,5 +21,6 @@ else:
         os.getenv('OIDC_ISSUER'),
         os.getenv('APP_PREFIX', ''),
         os.getenv('APP_ENV', 'production').lower() == 'production',
-        DEBUG
+        DEBUG,
+        os.getenv('AUTH_WHITELIST', '').split(',')
     )
