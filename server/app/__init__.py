@@ -47,16 +47,14 @@ def get_app(
             response = await call_next(request)
 
             access_logger.info(
-                '%s:%d - "%s %s %s" %d %s',
-                request.client.host,
-                request.client.port,
+                '%s - "%s %s %s" %d %s',
+                request.headers.get('x-forwarded-for', request.client.host),
                 request.method,
                 request.url,
                 'HTTP/{}'.format(request.scope['http_version']),
                 response.status_code,
                 status_strings.get(response.status_code, '')
             )
-            access_logger.debug('Headers: %s', request.headers)
 
             return response
 

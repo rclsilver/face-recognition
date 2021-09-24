@@ -118,9 +118,13 @@ class OidcAuth(BaseAuth):
         """
         Get or create user from authorization header
         """
-        if self.is_whitelist(request.client.host):
-            self._logger.debug('Client %s is in the whitelist', request.client.host)
+        client_ip = request.headers.get('x-forwarded-for', request.client.host)
+
+        if self.is_whitelist(client_ip):
+            self._logger.debug('Client %s is in the whitelist', client_ip)
             return UserController.get_or_create_user(db, 'internal', True)
+        else:
+            self._logger.debug('Client %s is not in the whitelist', client_ip)
 
         scheme, token = get_authorization_scheme_param(request.headers.get('authorization'))
 
