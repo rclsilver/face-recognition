@@ -56,6 +56,7 @@ def get_app(
                 response.status_code,
                 status_strings.get(response.status_code, '')
             )
+            access_logger.debug('Headers: %s', request.headers)
 
             return response
 
