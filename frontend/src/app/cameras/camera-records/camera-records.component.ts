@@ -37,7 +37,10 @@ export class CameraRecordsComponent implements OnInit {
       this._api
         .getCameraRecords(this._camera$.value)
         .pipe(finalize(() => this._loading$.next(false)))
-        .subscribe((records) => this._records$.next(records));
+        .subscribe(
+          (records) => this._records$.next(records),
+          () => this._records$.next([])
+        );
     }
   }
 

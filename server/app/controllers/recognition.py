@@ -3,6 +3,7 @@ import cv2
 import face_recognition
 import logging
 import shutil
+import uuid
 
 from app.constants import FACES_DIR, QUERIES_DIR, TMP_DIR
 from app.models.identities import Identity
@@ -11,17 +12,31 @@ from app.schemas.recognition import QueryResult, Recognition
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
 from typing import Any, List, Optional, Tuple
-from uuid import uuid4, UUID
 
 
 logger = logging.getLogger(__name__)
+
+
+class RecognitionException(Exception):
+    pass
+
+
+class NoEncodingFoundException(RecognitionException):
+    def __init__(self):
+        super().__init__('No encoding found')
+
+
+class MultipleEncodingFoundException(RecognitionException):
+    def __init__(self):
+        super().__init__('More than one encoding found')
 
 
 class RecognitionController:
     @classmethod
     def load_uploaded_file(cls, file: UploadFile) -> Any:
         # TODO do it without temp file ?
-        temp_file = TMP_DIR / str(str(uuid4()) + file.filename)
+        new_uuid = str(uuid.uuid4())
+        temp_file = TMP_DIR / f'{new_uuid}-{file.filename}'
 
         if not TMP_DIR.exists():
             TMP_DIR.mkdir()
@@ -52,9 +67,9 @@ class RecognitionController:
             encodings = face_recognition.face_encodings(image, known_face_locations=[rect])
 
             if not encodings:
-                raise Exception('No encoding found')
+                raise NoEncodingFoundException()
             elif len(encodings) > 1:
-                raise Exception('More than one encoding found')
+                raise MultipleEncodingFoundException()
 
             encoding = list(float(s) for s in encodings[0])
 
@@ -74,7 +89,7 @@ class RecognitionController:
             face_file.parent.mkdir(parents=True)
 
         if not cv2.imwrite(str(face_file), face):
-            raise Exception('Unable to write face file')
+            raise RecognitionException('Unable to write face file')
 
         db.commit()
 
@@ -97,7 +112,8 @@ class RecognitionController:
 
         # Store the full image
         if not cv2.imwrite(str(query_dir / 'full.png'), image):
-            raise Exception('Unable to write query full image')
+            db.rollback()
+            raise RecognitionException('Unable to write query full image')
 
         result = {
             'recognitions': [],
@@ -125,7 +141,7 @@ class RecognitionController:
 
                 # Write the suggestion file
                 if not cv2.imwrite(str(query_dir / f'{suggestion.id}.png'), image[top:bottom, left:right]):
-                    raise Exception('Unable to write suggestion image')
+                    raise RecognitionException('Unable to write suggestion image')
 
         if query.suggestions:
             # Commit the query and suggestions
@@ -203,7 +219,7 @@ class RecognitionController:
         return db.query(Query).order_by(Query.created_at.asc()).all()
 
     @classmethod
-    def get_query(cls, db: Session, id: UUID) -> Query:
+    def get_query(cls, db: Session, id: uuid.UUID) -> Query:
         return db.query(Query).filter_by(id=id).one()
 
     @classmethod
@@ -211,19 +227,23 @@ class RecognitionController:
         return db.query(Suggestion).all()
 
     @classmethod
-    def get_suggestion(cls, db: Session, query_id: UUID, suggestion_id: UUID) -> Suggestion:
+    def get_suggestion(cls, db: Session, query_id: uuid.UUID, suggestion_id: uuid.UUID) -> Suggestion:
         return db.query(Suggestion).filter_by(query_id=query_id, id=suggestion_id).one()
 
     @classmethod
-    def confirm_suggestion(cls, db: Session, query_id: UUID, suggestion_id: UUID, identity: Optional[Identity] = None) -> FaceEncoding:
+    def confirm_suggestion(cls, db: Session, query_id: uuid.UUID, suggestion_id: uuid.UUID, identity: Optional[Identity] = None) -> FaceEncoding:
         suggestion = cls.get_suggestion(db, query_id, suggestion_id)
         suggestion_file = QUERIES_DIR / str(suggestion.query.id) / f'{suggestion.id}.png'
 
         if not suggestion_file.exists():
-            raise Exception('Face file not found')
+            raise RecognitionException('Face file not found')
 
         image = cv2.imread(str(suggestion_file))
         identity = identity if identity else suggestion.identity
+
+        if not identity:
+            raise RecognitionException('No identity provided')
+
         encoding = cls.create_face_encoding(db, identity, image, (0, image.shape[1], image.shape[0], 0), suggestion.vec_low + suggestion.vec_high)
 
         cls.delete_suggestion(db, query_id, suggestion_id)
@@ -231,7 +251,7 @@ class RecognitionController:
         return encoding
 
     @classmethod
-    def delete_suggestion(cls, db: Session, query_id: UUID, suggestion_id: UUID) -> None:
+    def delete_suggestion(cls, db: Session, query_id: uuid.UUID, suggestion_id: uuid.UUID) -> None:
         suggestion = cls.get_suggestion(db, query_id, suggestion_id)
         query = suggestion.query
 
@@ -302,9 +322,9 @@ class RecognitionController:
         encodings = face_recognition.face_encodings(image, known_face_locations=[rect])
 
         if not encodings:
-            raise Exception('No encoding found')
+            raise NoEncodingFoundException()
         elif len(encodings) > 1:
-            raise Exception('More than one encoding found')
+            raise MultipleEncodingFoundException()
 
         encoding = list(float(s) for s in encodings[0])
 

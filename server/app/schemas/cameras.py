@@ -9,8 +9,8 @@ class CameraCreate(BaseModel):
     """
     label: str
     url: str
-    username: str
-    password: str
+    username: Optional[str]
+    password: Optional[str]
 
 
 class CameraUpdate(CameraCreate):

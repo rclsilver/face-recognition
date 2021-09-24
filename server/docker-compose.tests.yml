@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  postgresql-testing:
+    image: postgres:12
+    volumes:
+      - ${PWD}/postgresql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    environment:
+      POSTGRES_DB:       faces-testing
+      POSTGRES_USER:     faces-testing
+      POSTGRES_PASSWORD: faces-testing
+
+  tests:
+    image: face-recognition
+    build:
+      args:
+        PIP_ENV: development
+    depends_on:
+      - postgresql-testing
+    environment:
+      # Development
+      APP_ENV: 'tests'
+      APP_DEBUG: 'true'
+      APP_PREFIX: '/api'
+
+      # PostgreSQL
+      DB_HOST: postgresql-testing
+      DB_USER: faces-testing
+      DB_PASS: faces-testing
+      DB_NAME: faces-testing
+    volumes:
+      - ${PWD}:/usr/src
